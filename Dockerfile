@@ -41,4 +41,4 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 COPY ./docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Lệnh khởi động (Tạm thời bỏ migrate/seed để deploy nhanh hơn)
-CMD service nginx start && php-fpm
+CMD nginx && php-fpm
