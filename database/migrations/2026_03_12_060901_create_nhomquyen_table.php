@@ -4,17 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::create('nhomquyen', function (Blueprint $table) {
-    $table->increments('manhomquyen');
-    $table->string('tennhomquyen', 50);
-    $table->boolean('trangthai')->default(1);
+            // Sử dụng id() hoặc bigIncremental để làm khóa chính chuẩn Laravel
+            $table->bigIncrements('manhomquyen');
+            $table->string('tennhomquyen');
+            $table->timestamps();
         });
     }
 

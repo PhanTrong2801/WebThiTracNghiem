@@ -4,20 +4,24 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::create('chitietquyen', function (Blueprint $table) {
-            $table->integer('manhomquyen');
-            $table->string('chucnang', 50);
-            $table->string('hanhdong', 50);
-            $table->primary(['manhomquyen', 'chucnang', 'hanhdong']);
-            $table->foreign('manhomquyen')->references('manhomquyen')->on('nhomquyen');
-            $table->foreign('chucnang')->references('chucnang')->on('danhmucchucnang');
+            $table->id();
+            // Phải dùng foreignId hoặc unsignedBigInteger để khớp với bigIncrements
+            $table->unsignedBigInteger('manhomquyen');
+
+            // Thiết lập khóa ngoại
+            $table->foreign('manhomquyen')
+                  ->references('manhomquyen')
+                  ->on('nhomquyen')
+                  ->onDelete('cascade');
+
+            $table->timestamps();
         });
     }
 
