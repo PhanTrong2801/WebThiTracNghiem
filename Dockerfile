@@ -21,7 +21,7 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader
 
 # Cài đặt Node.js và Build React (Inertia)
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -\
     && apt-get install -y nodejs \
     && npm install \
     && npm run build
@@ -33,9 +33,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 COPY ./docker/nginx.conf /etc/nginx/sites-available/default
 
 # Chạy lệnh khởi động
-CMD php artisan migrate --force && \
+CMD php artisan migrate:fresh --force && \
     php artisan db:seed --force && \
     service nginx start && \
-    php artisan config:cache && \
-    php artisan route:cache && \
     php-fpm
