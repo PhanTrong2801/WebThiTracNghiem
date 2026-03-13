@@ -33,4 +33,9 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 COPY ./docker/nginx.conf /etc/nginx/sites-available/default
 
 # Chạy lệnh khởi động
-CMD service nginx start && php-fpm
+CMD php artisan migrate --force && \
+    php artisan db:seed --force && \
+    service nginx start && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php-fpm
