@@ -213,5 +213,7 @@ return [
     */
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
+    'expire_on_close' => false,
+
 
 ];

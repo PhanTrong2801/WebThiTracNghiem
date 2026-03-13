@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'id' => ['required', 'string', 'starts_with:DH'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,16 +41,40 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // 1. Nhận id thay vì email
+        $id = $this->input('id');
+        $password = $this->input('password');
+
+        // 2. Tìm User để kiểm tra trạng thái khóa (giống code cũ của bạn)
+        $user = \App\Models\User::find($id);
+
+        if (!$user) {
+            // Quăng lỗi nếu không tồn tại
+            throw ValidationException::withMessages([
+                'id' => 'Tài khoản không tồn tại!',
+            ]);
+        }
+
+        if ($user->trangthai == 0) {
+            // Quăng lỗi nếu bị khóa
+            throw ValidationException::withMessages([
+                'id' => 'Tài khoản đã bị khóa!',
+            ]);
+        }
+
+        // 3. Thực hiện Auth::attempt() dựa vào cột id (vì id đang lưu ở id)
+        $remember = $this->boolean('remember') || $this->input('remember') === true || $this->input('remember') === 'on';
+if (! Auth::attempt(['id' => $id, 'password' => $password], $remember)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'id' => 'Sai mật khẩu!', // Báo lỗi tài khoản / mật khẩu sai
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
     }
+
 
     /**
      * Ensure the login request is not rate limited.
