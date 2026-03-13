@@ -1,39 +1,44 @@
-# Sử dụng PHP 8.2 (hoặc 8.4 nếu bạn đã nâng cấp)
-FROM php:8.2-fpm
+# GIAI ĐOẠN 1: Build Frontend (React/Vite)
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
 
-# Cài đặt các thư viện hệ thống cần thiết
-RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev zip unzip nginx
+# GIAI ĐOẠN 2: Chạy Backend (PHP & Nginx)
+FROM php:8.2-fpm-alpine
+
+# Cài đặt các thư viện hệ thống siêu nhẹ (Alpine)
+RUN apk add --no-cache \
+    nginx \
+    curl \
+    libpng-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    zip \
+    unzip
 
 # Cài đặt PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo_mysql mbstring gd bcmath
 
 # Cài đặt Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Thiết lập thư mục làm việc
 WORKDIR /var/www
-
-# Copy toàn bộ code vào container
 COPY . .
 
-# Cài đặt Laravel dependencies
+# Copy kết quả build từ Giai đoạn 1 sang (Loại bỏ node_modules nặng nề)
+COPY --from=frontend-builder /app/public/build ./public/build
+
+# Cài đặt dependencies Laravel (Không cài các gói dev)
 RUN composer install --no-dev --optimize-autoloader
 
-# Cài đặt Node.js và Build React (Inertia)
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -\
-    && apt-get install -y nodejs \
-    && npm install \
-    && npm run build
-
-# Cấp quyền cho thư mục storage
+# Cấp quyền
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Copy file cấu hình Nginx (Sẽ tạo ở bước 2)
-COPY ./docker/nginx.conf /etc/nginx/sites-available/default
+# Cấu hình Nginx
+COPY ./docker/nginx.conf /etc/nginx/http.d/default.conf
 
-# Chạy lệnh khởi động
-CMD php artisan migrate:fresh --force && \
-    php artisan db:seed --force && \
-    service nginx start && \
-    php-fpm
+# Lệnh khởi động (Tạm thời bỏ migrate/seed để deploy nhanh hơn)
+CMD service nginx start && php-fpm
