@@ -11,9 +11,9 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('nhomquyen', function (Blueprint $table) {
-            // Sử dụng id() hoặc bigIncremental để làm khóa chính chuẩn Laravel
             $table->bigIncrements('manhomquyen');
             $table->string('tennhomquyen');
+            $table->integer('trangthai')->default(1); // THÊM DÒNG NÀY
             $table->timestamps();
         });
     }

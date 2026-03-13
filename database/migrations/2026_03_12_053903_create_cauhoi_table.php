@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,12 +12,12 @@ return new class extends Migration
     {
         Schema::create('cauhoi', function (Blueprint $table) {
             $table->increments('macauhoi');
-    $table->string('noidung', 500);
-    $table->integer('dokho');
-    $table->integer('mamonhoc');
-    $table->integer('machuong');
-    $table->string('nguoitao', 50)->nullable();
-    $table->integer('trangthai')->default(1);
+            $table->string('noidung');
+            $table->integer('dokho');
+            $table->integer('mamonhoc');
+            $table->integer('machuong');
+            $table->string('nguoitao', 50)->nullable();
+            $table->integer('trangthai')->default(1);
         });
     }
 
