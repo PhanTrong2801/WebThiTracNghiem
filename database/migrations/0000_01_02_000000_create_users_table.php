@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string('email', 191)->unique(); // Nên thêm unique để tránh trùng email
             $table->string('googleid', 150)->nullable();
             $table->string('hoten', 255);
+            $table->unsignedBigInteger('makhoa')->nullable();
             $table->boolean('gioitinh')->nullable();
             $table->date('ngaysinh')->default('1990-01-01');
             $table->string('avatar', 255)->nullable();
@@ -30,11 +31,19 @@ return new class extends Migration {
             $table->string('otp', 10)->nullable();
 
             $table->unsignedBigInteger('manhomquyen')->nullable();
+            
+
             // Lưu ý: bảng 'nhomquyen' phải được tạo TRƯỚC bảng này
             $table->foreign('manhomquyen', 'FK_NGUOIDUNG_NHOMQUYEN')
                   ->references('manhomquyen')
                   ->on('nhomquyen')
                   ->onDelete('set null'); // Tránh lỗi khi xóa nhóm quyền
+
+            $table->foreign('makhoa', 'FK_NGUOIDUNG_KHOA')
+                  ->references('id')
+                  ->on('khoa')
+                  ->onDelete('set null');
+
 
             $table->rememberToken(); // Rất nên có để tính năng "Ghi nhớ đăng nhập" hoạt động
             $table->timestamps();

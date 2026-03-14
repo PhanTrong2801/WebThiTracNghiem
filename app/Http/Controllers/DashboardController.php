@@ -28,13 +28,16 @@ class DashboardController extends Controller
         // Nếu có quyền quản lý người dùng hoặc nhóm quyền (tương đương Admin)
         if (isset($permissions['nguoidung']) || isset($permissions['nhomquyen'])) {
             $stats = [
+                'totalKhoa' => DB::table('khoa')->count(),
                 'totalUsers' => DB::table('users')->count(),
-                'totalRoles' => DB::table('nhomquyen')->where('trangthai', 1)->count(),
                 'totalAdmins' => DB::table('users')->where('manhomquyen', 1)->count(),
                 'totalTeachers' => DB::table('users')->where('manhomquyen', 2)->count(),
-                'totalStudents' => DB::table('users')->where('manhomquyen', 3)->count(),
+                'totalSubjects' => Schema::hasTable('monhoc') ? DB::table('monhoc')->count() : 0,
                 'totalChapters' => Schema::hasTable('chuong') ? DB::table('chuong')->count() : 0,
+                'totalStudents' => DB::table('users')->where('manhomquyen', 3)->count(),
+                'totalRoles' => DB::table('nhomquyen')->where('trangthai', 1)->count(),
             ];
+
         } 
         // Nếu có quyền quản lý giảng dạy (tương đương Giảng viên)
         elseif (isset($permissions['dethi']) || isset($permissions['hocphan']) || isset($permissions['cauhoi'])) {

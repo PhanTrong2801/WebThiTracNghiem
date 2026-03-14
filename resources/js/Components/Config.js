@@ -42,7 +42,7 @@ export const NAVBAR_MENU = [
             {
                 'name'  : 'Người dùng',
                 'icon'  : 'fa fa-user-friends',
-                'url'   : 'user',
+                'url'   : 'users',
                 'role' : 'nguoidung'
             },
             {

@@ -2,12 +2,12 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import Notifications from './Notifications';
 
-const Header = ({ user, onToggleSidebarMini, onToggleSidebar, isDarkMode }) => {
+const Header = ({ user, onToggleSidebarMini, isDarkMode }) => {
     return (
         <header id="page-header">
             <div className="content-header">
                 <div>
-                    <button type="button" className="btn btn-alt-secondary me-1 d-lg-none" onClick={onToggleSidebar}>
+                    <button type="button" className="btn btn-alt-secondary me-1 d-lg-none" data-toggle="layout" data-action="sidebar_toggle">
                         <i className="fa fa-fw fa-bars"></i>
                     </button>
                     <button type="button" className="btn btn-alt-secondary me-1 d-none d-lg-inline-block" onClick={onToggleSidebarMini}>

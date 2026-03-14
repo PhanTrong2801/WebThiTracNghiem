@@ -84,11 +84,18 @@ export default function Dashboard() {
                 {(auth.user_role?.nguoidung || auth.user_role?.nhomquyen) && (
                     <div className="row">
                         <StatCard 
+                            title="Khoa" 
+                            value={stats?.totalKhoa || 0} 
+                            icon="fa-building" 
+                            link="/khoa" 
+                            colorClass="primary" 
+                        />
+                        <StatCard 
                             title="Người dùng" 
                             value={stats?.totalUsers || 0} 
                             icon="fa-users" 
                             link="/users" 
-                            colorClass="primary" 
+                            colorClass="dark" 
                         />
                         <StatCard 
                             title="Quản trị viên" 
@@ -98,18 +105,25 @@ export default function Dashboard() {
                             colorClass="danger" 
                         />
                         <StatCard 
-                            title="Chương" 
-                            value={stats?.totalChapters || 0} 
-                            icon="fa-list-ol" 
-                            link="/chapter" 
-                            colorClass="info" 
-                        />
-                        <StatCard 
                             title="Giảng viên" 
                             value={stats?.totalTeachers || 0} 
                             icon="fa-chalkboard-user" 
                             link="#" 
                             colorClass="info" 
+                        />
+                        <StatCard 
+                            title="Môn học" 
+                            value={stats?.totalSubjects || 0} 
+                            icon="fa-book" 
+                            link="/monhoc" 
+                            colorClass="warning" 
+                        />
+                        <StatCard 
+                            title="Chương" 
+                            value={stats?.totalChapters || 0} 
+                            icon="fa-list-ol" 
+                            link="/chapter" 
+                            colorClass="primary" 
                         />
                         <StatCard 
                             title="Sinh viên" 
@@ -127,6 +141,7 @@ export default function Dashboard() {
                         />
                     </div>
                 )}
+
 
                 {/* ---------- ROLE 2: GIẢNG VIÊN (Có quyền tham gia giảng dạy/tạo đề) ---------- */}
                 {(auth.user_role?.dethi || auth.user_role?.hocphan || auth.user_role?.cauhoi) && (

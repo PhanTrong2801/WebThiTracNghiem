@@ -14,7 +14,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen')
-            ->get();
+            ->paginate(10);
 
         return Inertia::render('Users/Index', [
             'users' => $users,
@@ -28,7 +28,7 @@ class UserController extends Controller
     public function apiIndex()
     {
         $users = User::select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen')
-            ->get();
+            ->paginate(10);
 
         return response()->json([
             'success' => true,

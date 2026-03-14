@@ -31,7 +31,9 @@ class User extends Authenticatable
         'avatar',
         'trangthai',
         'manhomquyen',
+        'makhoa',
         'sodienthoai',
+
     ];
 
     /**
@@ -77,6 +79,15 @@ class User extends Authenticatable
     {
         return $this->belongsTo(NhomQuyen::class, 'manhomquyen', 'manhomquyen');
     }
+
+    /**
+     * Khoa của user
+     */
+    public function khoa()
+    {
+        return $this->belongsTo(Khoa::class, 'makhoa', 'id');
+    }
+
 
     /**
      * Lấy danh sách quyền chi tiết dạng ["tghocphan" => ["join", "view"], ...]
