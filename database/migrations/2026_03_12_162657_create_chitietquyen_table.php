@@ -11,9 +11,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('chitietquyen', function (Blueprint $table) {
-            $table->id();
             // Phải dùng foreignId hoặc unsignedBigInteger để khớp với bigIncrements
             $table->unsignedBigInteger('manhomquyen');
+            $table->string('chucnang', 50);
+            $table->string('hanhdong', 50);
 
             // Thiết lập khóa ngoại
             $table->foreign('manhomquyen')
@@ -21,7 +22,13 @@ return new class extends Migration {
                   ->on('nhomquyen')
                   ->onDelete('cascade');
 
-            $table->timestamps();
+            $table->foreign('chucnang')
+                  ->references('chucnang')
+                  ->on('danhmucchucnang')
+                  ->onDelete('cascade');
+
+
+            // Set composite primary key if needed, or stick with no primary key as per model
         });
     }
 

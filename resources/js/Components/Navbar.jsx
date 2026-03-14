@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { NAVBAR_MENU } from './Config'; // Sửa lại đường dẫn import file Config.js cho đúng
 
-const Navbar = () => {
+const Navbar = ({ onToggleSidebar }) => {
     const { url } = usePage();
     const { auth } = usePage().props;
     const userRole = auth?.user_role || {};
@@ -63,7 +63,7 @@ const Navbar = () => {
                         {/* END Dark Mode */}
 
                         {/* Close Sidebar, Visible only on mobile screens */}
-                        <button type="button" className="d-lg-none btn btn-sm btn-alt-secondary ms-1" data-toggle="layout" data-action="sidebar_close">
+                        <button type="button" className="d-lg-none btn btn-sm btn-alt-secondary ms-1" onClick={onToggleSidebar}>
                             <i className="fa fa-fw fa-times"></i>
                         </button>
                         {/* END Close Sidebar */}
