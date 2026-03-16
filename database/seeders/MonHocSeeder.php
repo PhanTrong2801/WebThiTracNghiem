@@ -52,6 +52,7 @@ public function run(): void
             ['CS09002', 'Thực hành Nhập môn lập trình', 1, 1, 0, 30],
             ['CS09003', 'Nhập môn Web và ứng dụng', 1, 3, 30, 15],
             ['CS09004', 'Thực hành Nhập môn Web và ứng dụng', 1, 1, 0, 30],
+            ['CS03036', 'Lập trình web', 1, 3, 30, 15],
 
             // BA - makhoa: 2
             ['BA19001', 'Kinh tế vi mô', 2, 3, 45, 30],

@@ -3,6 +3,8 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +38,15 @@ Route::middleware('auth')->group(function () {
 
     // Ngành/Khoa (Khoa)
     Route::resource('khoa', \App\Http\Controllers\KhoaController::class)->except(['create', 'edit', 'show']);
+
+    // Môn học (Subject)
+    Route::resource('subject', SubjectController::class)->except(['create', 'edit', 'show']);
+
+    // Chương (Chapter)
+    Route::get('/chapters/subject/{mamonhoc}', [ChapterController::class, 'getBySubject'])->name('chapters.bySubject');
+    Route::post('/chapters', [ChapterController::class, 'store'])->name('chapters.store');
+    Route::put('/chapters/{id}', [ChapterController::class, 'update'])->name('chapters.update');
+    Route::delete('/chapters/{id}', [ChapterController::class, 'destroy'])->name('chapters.destroy');
 });
 
 require __DIR__.'/auth.php';

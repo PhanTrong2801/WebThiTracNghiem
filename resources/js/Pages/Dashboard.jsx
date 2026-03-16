@@ -127,7 +127,7 @@ export default function Dashboard() {
                             title="Môn học" 
                             value={stats.totalSubjects} 
                             icon="fa-book" 
-                            link="/monhoc" 
+                            link="/subject" 
                             colorClass="warning" 
                         />
                     )}
@@ -138,7 +138,7 @@ export default function Dashboard() {
                             title="Chương" 
                             value={stats.totalChapters} 
                             icon="fa-list-ol" 
-                            link="/chapter" 
+                            link="#" 
                             colorClass="primary" 
                         />
                     )}

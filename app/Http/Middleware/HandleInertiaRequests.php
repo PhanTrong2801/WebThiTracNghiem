@@ -92,12 +92,6 @@ class HandleInertiaRequests extends Middleware
                             'role'  => 'monhoc'
                         ],
                         [
-                            'name'  => 'Chương',
-                            'icon'  => 'fa fa-list-ol',
-                            'url'   => 'chapter',
-                            'role'  => 'chuong'
-                        ],
-                        [
                             'name'  => 'Phân công',
                             'icon'  => 'fa fa-person-harassing',
                             'url'   => 'assignment',
