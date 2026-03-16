@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->increments('macauhoi');
             $table->string('noidung');
             $table->integer('dokho');
-            $table->integer('mamonhoc');
+            $table->string('mamonhoc');
             $table->integer('machuong');
             $table->string('nguoitao', 50)->nullable();
             $table->integer('trangthai')->default(1);

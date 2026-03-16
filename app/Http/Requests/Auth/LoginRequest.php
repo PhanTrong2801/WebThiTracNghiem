@@ -46,7 +46,7 @@ class LoginRequest extends FormRequest
         $password = $this->input('password');
 
         // 2. Tìm User để kiểm tra trạng thái khóa (giống code cũ của bạn)
-        $user = \App\Models\UserModel::find($id);
+        $user = \App\Models\User::find($id);
 
         if (!$user) {
             // Quăng lỗi nếu không tồn tại
