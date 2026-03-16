@@ -28,7 +28,13 @@ class ModuleController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('tennhom', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('tennhom', 'like', '%' . $search . '%')
+                  ->orWhereHas('monhoc', function($mq) use ($search) {
+                      $mq->where('tenmonhoc', 'like', '%' . $search . '%');
+                  });
+            });
         }
 
         $nhoms = $query->orderBy('namhoc', 'desc')->orderBy('hocky', 'desc')->orderBy('manhom', 'desc')->get();

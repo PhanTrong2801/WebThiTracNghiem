@@ -97,7 +97,7 @@ export default function StudentModuleIndex() {
                             <input 
                                 type="text" 
                                 className="form-control border-start-0" 
-                                placeholder="Tìm kiếm nhóm..." 
+                                placeholder="Tìm tên nhóm hoặc môn học..." 
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 onBlur={() => router.get('/student/modules', { hienthi, search }, { preserveState: true })}
@@ -147,7 +147,7 @@ export default function StudentModuleIndex() {
                                         <i className="fa fa-user-tie me-1"></i> {group.giang_vien_user?.hoten || 'Chưa có GV'}
                                     </div>
                                     <div className="fs-sm text-muted">
-                                         {group.namhoc} - HK{group.hocky}
+                                         {group.namhoc}-{group.namhoc + 1} - HK {group.hocky}
                                     </div>
                                 </div>
                                 <div className="block-content block-content-full block-content-sm bg-body-light fs-sm text-center">

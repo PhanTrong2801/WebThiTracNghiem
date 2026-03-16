@@ -15,11 +15,33 @@ export default function ModuleIndex() {
     const [hienthi, setHienthi] = useState(filters?.hienthi ?? 1);
     const [search, setSearch] = useState(filters?.search || '');
 
+    const getAcademicYear = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1; // getMonth is 0-indexed
+        return month >= 9 ? year : year - 1;
+    };
+
+    const initialAcademicYear = getAcademicYear();
+    const namHocOptions = [];
+    // 1 năm trước, năm hiện tại và 4 năm sau = 6 năm
+    for (let y = initialAcademicYear - 1; y <= initialAcademicYear + 4; y++) {
+        namHocOptions.push(y);
+    }
+
+    const formatNamHoc = (y) => `${y}-${y + 1}`;
+
     // Modal Add/Edit
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState(null);
-    const [form, setForm] = useState({ tennhom: '', mamonhoc: '', namhoc: new Date().getFullYear(), hocky: 1, ghichu: '' });
+    const [form, setForm] = useState({ 
+        tennhom: '', 
+        mamonhoc: '', 
+        namhoc: initialAcademicYear, 
+        hocky: 1, 
+        ghichu: '' 
+    });
     const [errors, setErrors] = useState({});
 
     // Students modal
@@ -39,7 +61,7 @@ export default function ModuleIndex() {
     };
 
     const openAddModal = () => {
-        setForm({ tennhom: '', mamonhoc: danhSachMonHoc[0]?.mamonhoc || '', namhoc: new Date().getFullYear(), hocky: 1, ghichu: '' });
+        setForm({ tennhom: '', mamonhoc: danhSachMonHoc[0]?.mamonhoc || '', namhoc: initialAcademicYear, hocky: 1, ghichu: '' });
         setIsEditing(false);
         setEditId(null);
         setErrors({});
@@ -115,10 +137,6 @@ export default function ModuleIndex() {
             .then(() => setStudents(prev => prev.filter(s => s.id !== uid)));
     };
 
-    const namHocOptions = [];
-    const currentYear = new Date().getFullYear();
-    for (let y = currentYear - 2; y <= currentYear + 2; y++) namHocOptions.push(y);
-
     return (
         <MainLayout user={user}>
             <Head title="Nhóm học phần" />
@@ -148,7 +166,7 @@ export default function ModuleIndex() {
                             </button>
                         </div>
                         <input type="text" className="form-control form-control-sm" style={{ maxWidth: '260px' }}
-                            placeholder="Tìm nhóm..." value={search}
+                            placeholder="Tìm tên nhóm hoặc môn học..." value={search}
                             onChange={e => { setSearch(e.target.value); }}
                             onKeyDown={e => e.key === 'Enter' && filterGroups()} />
                     </div>
@@ -174,7 +192,7 @@ export default function ModuleIndex() {
                                 <span className="badge bg-primary me-2">{group.mamonhoc}</span>
                                 {group.tenmonhoc}
                                 <span className="text-muted ms-2 fw-normal small">
-                                    NH{group.namhoc} – HK{group.hocky}
+                                    NH {formatNamHoc(group.namhoc)} – HK {group.hocky}
                                 </span>
                             </h5>
                         </div>
@@ -297,8 +315,8 @@ export default function ModuleIndex() {
                                     <div className="col-6">
                                         <label className="form-label">Năm học <span className="text-danger">*</span></label>
                                         <select className="form-select" value={form.namhoc}
-                                            onChange={e => setForm({ ...form, namhoc: e.target.value })}>
-                                            {namHocOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                                            onChange={e => setForm({ ...form, namhoc: parseInt(e.target.value) })}>
+                                            {namHocOptions.map(y => <option key={y} value={y}>{formatNamHoc(y)}</option>)}
                                         </select>
                                     </div>
                                     <div className="col-6">
