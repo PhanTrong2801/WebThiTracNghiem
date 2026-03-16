@@ -12,12 +12,16 @@ return new class extends Migration {
     {
         Schema::create('cauhoi', function (Blueprint $table) {
             $table->increments('macauhoi');
-            $table->string('noidung');
+            $table->string('noidung', 500);
             $table->integer('dokho');
-            $table->string('mamonhoc');
-            $table->integer('machuong');
+            $table->string('mamonhoc', 20);
+            $table->unsignedInteger('machuong');
             $table->string('nguoitao', 50)->nullable();
             $table->integer('trangthai')->default(1);
+
+            // Khóa ngoại
+            $table->foreign('mamonhoc')->references('mamonhoc')->on('monhoc')->onDelete('cascade');
+            $table->foreign('machuong')->references('machuong')->on('chuong')->onDelete('cascade');
         });
     }
 

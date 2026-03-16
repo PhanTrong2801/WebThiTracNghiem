@@ -76,7 +76,7 @@ class HandleInertiaRequests extends Middleware
                         [
                             'name'  => 'Câu hỏi',
                             'icon'  => 'fa fa-circle-question',
-                            'url'   => 'question',
+                            'url'   => 'questions',
                             'role'  => 'cauhoi'
                         ],
                         [

@@ -13,6 +13,20 @@ class ChuongSeeder extends Seeder
     public function run(): void
     {
         $chapters = [
+            // Lập trình web (CS03036)
+            ['CS03036', 'Chương 1: Cơ bản về PHP'],
+            ['CS03036', 'Chương 2: Biến và kiểu dữ liệu'],
+            ['CS03036', 'Chương 3: Câu lệnh điều khiển'],
+            ['CS03036', 'Chương 4: Vòng lặp'],
+            ['CS03036', 'Chương 5: Mảng'],
+            ['CS03036', 'Chương 6: Hàm'],
+            ['CS03036', 'Chương 7: Xử lý chuỗi'],
+            ['CS03036', 'Chương 8: Xử lý ngày tháng'],
+            ['CS03036', 'Chương 9: Xử lý file'],
+            ['CS03036', 'Chương 10: Lập trình hướng đối tượng (OOP)'],
+
+            ['CS03015', 'Chương 1: Ngôn ngữ lập trình Java'],
+
             // Nhập môn web và ứng dụng (CS09003)
             ['CS09003', 'Tổng quan về World Wide Web'],
             ['CS09003', 'Ngôn ngữ đánh dấu văn bản HTML'],
@@ -55,17 +69,6 @@ class ChuongSeeder extends Seeder
             ['CS03013', 'Chương 4: Thiết kế phần mềm'],
             ['CS03013', 'Chương 5: Kiểm thử và bảo trì'],
 
-            // Lập trình web (CS03036)
-            ['CS03036', 'Chương 1: Cơ bản về PHP'],
-            ['CS03036', 'Chương 2: Biến và kiểu dữ liệu'],
-            ['CS03036', 'Chương 3: Câu lệnh điều khiển'],
-            ['CS03036', 'Chương 4: Vòng lặp'],
-            ['CS03036', 'Chương 5: Mảng'],
-            ['CS03036', 'Chương 6: Hàm'],
-            ['CS03036', 'Chương 7: Xử lý chuỗi'],
-            ['CS03036', 'Chương 8: Xử lý ngày tháng'],
-            ['CS03036', 'Chương 9: Xử lý file'],
-            ['CS03036', 'Chương 10: Lập trình hướng đối tượng (OOP)'],
         ];
 
         foreach ($chapters as $chapter) {
