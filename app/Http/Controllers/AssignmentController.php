@@ -34,6 +34,7 @@ class AssignmentController extends Controller
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
+                /** @var \Illuminate\Database\Eloquent\Builder $q */
                 $q->whereHas('monhoc', function ($mh) use ($s) {
                     $mh->where('tenmonhoc', 'like', "%$s%")->orWhere('mamonhoc', 'like', "%$s%");
                 })->orWhereHas('nguoidung', function ($nd) use ($s) {
@@ -52,17 +53,21 @@ class AssignmentController extends Controller
         // Giảng viên (những user có quyền cauhoi/monhoc/hocphan)
         $giangViens = DB::table('users as nd')
             ->join('chitietquyen as ctq', 'nd.manhomquyen', '=', 'ctq.manhomquyen')
+            ->leftJoin('khoa as k', 'nd.makhoa', '=', 'k.id')
             ->whereIn('ctq.chucnang', ['cauhoi', 'monhoc', 'hocphan', 'chuong'])
-            ->groupBy('nd.id', 'nd.hoten', 'nd.makhoa')
-            ->select('nd.id', 'nd.hoten', 'nd.makhoa')
+            ->groupBy('nd.id', 'nd.hoten', 'nd.makhoa', 'k.tenkhoa')
+            ->select('nd.id', 'nd.hoten', 'nd.makhoa', 'k.tenkhoa')
             ->get();
 
         $danhSachMonHoc = MonHocModel::active()->get(['mamonhoc', 'tenmonhoc', 'makhoa', 'sotinchi', 'sotietlythuyet', 'sotietthuchanh']);
+        
+        $danhSachKhoa = DB::table('khoa')->get(['id', 'tenkhoa']);
 
         return Inertia::render('Assignment/Index', [
             'danhSachPhanCong' => $danhSachPhanCong,
             'danhSachGiangVien' => $giangViens,
             'danhSachMonHoc' => $danhSachMonHoc,
+            'danhSachKhoa' => $danhSachKhoa,
             'filters' => ['search' => $request->search],
         ]);
     }

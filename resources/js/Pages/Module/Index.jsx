@@ -56,9 +56,13 @@ export default function ModuleIndex() {
     // Invite code display
     const [inviteCodes, setInviteCodes] = useState({});
 
-    const filterGroups = () => {
-        router.get('/modules', { hienthi, search }, { preserveState: true, replace: true });
-    };
+    // Debounce search
+    useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/modules', { hienthi, search }, { preserveState: true, replace: true });
+        }, 300);
+        return () => clearTimeout(t);
+    }, [search, hienthi]);
 
     const openAddModal = () => {
         setForm({ tennhom: '', mamonhoc: danhSachMonHoc[0]?.mamonhoc || '', namhoc: initialAcademicYear, hocky: 1, ghichu: '' });
@@ -153,22 +157,21 @@ export default function ModuleIndex() {
                     <div className="d-flex align-items-center gap-2 flex-grow-1">
                         <div className="btn-group">
                             <button className={`btn btn-sm ${hienthi == 1 ? 'btn-primary' : 'btn-alt-primary'}`}
-                                onClick={() => { setHienthi(1); setTimeout(filterGroups, 0); }}>
+                                onClick={() => setHienthi(1)}>
                                 Đang giảng dạy
                             </button>
                             <button className={`btn btn-sm ${hienthi == 0 ? 'btn-primary' : 'btn-alt-primary'}`}
-                                onClick={() => { setHienthi(0); setTimeout(filterGroups, 0); }}>
+                                onClick={() => setHienthi(0)}>
                                 Đã ẩn
                             </button>
                             <button className={`btn btn-sm ${hienthi === 'all' ? 'btn-primary' : 'btn-alt-primary'}`}
-                                onClick={() => { setHienthi('all'); setTimeout(filterGroups, 0); }}>
+                                onClick={() => setHienthi('all')}>
                                 Tất cả
                             </button>
                         </div>
                         <input type="text" className="form-control form-control-sm" style={{ maxWidth: '260px' }}
                             placeholder="Tìm tên nhóm hoặc môn học..." value={search}
-                            onChange={e => { setSearch(e.target.value); }}
-                            onKeyDown={e => e.key === 'Enter' && filterGroups()} />
+                            onChange={e => setSearch(e.target.value)} />
                     </div>
                     {canCreate && (
                         <button className="btn btn-hero btn-primary btn-sm" onClick={openAddModal}>

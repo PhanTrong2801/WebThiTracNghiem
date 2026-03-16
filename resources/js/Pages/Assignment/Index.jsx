@@ -4,14 +4,15 @@ import { Head, usePage, router } from '@inertiajs/react';
 import axios from 'axios';
 
 export default function AssignmentIndex() {
-    const { auth, danhSachPhanCong: initList, danhSachGiangVien, danhSachMonHoc, flash, filters } = usePage().props;
+    const { auth, danhSachPhanCong, danhSachGiangVien, danhSachMonHoc, danhSachKhoa, flash, filters } = usePage().props;
     const user = auth.user;
 
-    const [list, setList] = useState(initList || []);
     const [search, setSearch] = useState(filters?.search || '');
 
     // Modal add
     const [showModal, setShowModal] = useState(false);
+    const [selectedKhoa, setSelectedKhoa] = useState('');
+    const [gvSearch, setGvSearch] = useState('');
     const [selectedGV, setSelectedGV] = useState('');
     const [selectedMons, setSelectedMons] = useState([]); // array of mamonhoc
     const [assignedMons, setAssignedMons] = useState([]); // already assigned
@@ -30,6 +31,16 @@ export default function AssignmentIndex() {
         }, 300);
         return () => clearTimeout(t);
     }, [search]);
+
+    const handleSearch = () => {
+        router.get('/assignment', { search }, { preserveState: true, replace: true });
+    };
+
+    const filteredGVs = danhSachGiangVien.filter(gv => {
+        const matchesKhoa = !selectedKhoa || gv.makhoa == selectedKhoa;
+        const matchesName = !gvSearch || gv.hoten.toLowerCase().includes(gvSearch.toLowerCase()) || gv.id.toString().includes(gvSearch);
+        return matchesKhoa && matchesName;
+    });
 
     const filteredMons = danhSachMonHoc.filter(mh => {
         // Lọc theo search keyword
@@ -56,6 +67,8 @@ export default function AssignmentIndex() {
     };
 
     const openModal = () => {
+        setSelectedKhoa('');
+        setGvSearch('');
         setSelectedGV('');
         setSelectedMons([]);
         setMonSearch('');
@@ -77,7 +90,7 @@ export default function AssignmentIndex() {
     };
 
     // Group by giảng viên for display
-    const grouped = list.reduce((acc, pc) => {
+    const grouped = (danhSachPhanCong || []).reduce((acc, pc) => {
         if (!acc[pc.manguoidung]) {
             acc[pc.manguoidung] = { hoten: pc.hoten, manguoidung: pc.manguoidung, monhocs: [] };
         }
@@ -113,8 +126,12 @@ export default function AssignmentIndex() {
                             <div className="input-group">
                                 <input type="text" className="form-control form-control-alt"
                                     placeholder="Tìm giảng viên, môn học..."
-                                    value={search} onChange={e => setSearch(e.target.value)} />
-                                <span className="input-group-text bg-body border-0"><i className="fa fa-search"></i></span>
+                                    value={search} 
+                                    onChange={e => setSearch(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleSearch()} />
+                                <button type="button" className="btn btn-alt-secondary" onClick={handleSearch}>
+                                    <i className="fa fa-search"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -184,22 +201,44 @@ export default function AssignmentIndex() {
                             </div>
                             <div className="modal-body">
                                 {/* Chọn giảng viên */}
-                                <div className="mb-4">
-                                    <label className="form-label fw-semibold">Giảng viên <span className="text-danger">*</span></label>
-                                    <select className="form-select" value={selectedGV} onChange={e => setSelectedGV(e.target.value)}>
-                                        <option value="">-- Chọn giảng viên --</option>
-                                        {danhSachGiangVien.map(gv => (
-                                            <option key={gv.id} value={gv.id}>{gv.hoten} (ID: {gv.id})</option>
-                                        ))}
-                                    </select>
+                                <div className="row mb-4">
+                                    <div className="col-md-4">
+                                        <label className="form-label fw-semibold">Lọc theo khoa</label>
+                                        <select className="form-select" value={selectedKhoa} onChange={e => setSelectedKhoa(e.target.value)}>
+                                            <option value="">Tất cả khoa</option>
+                                            {danhSachKhoa.map(k => (
+                                                <option key={k.id} value={k.id}>{k.tenkhoa}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="col-md-8">
+                                        <label className="form-label fw-semibold">Giảng viên <span className="text-danger">*</span></label>
+                                        <div className="input-group mb-2">
+                                            <span className="input-group-text"><i className="fa fa-search"></i></span>
+                                            <input type="text" className="form-control" placeholder="Tìm tên giảng viên hoặc ID..."
+                                                value={gvSearch} onChange={e => setGvSearch(e.target.value)} />
+                                        </div>
+                                        <select className="form-select" value={selectedGV} size="5" onChange={e => setSelectedGV(e.target.value)}>
+                                            <option value="">-- Chọn giảng viên ({filteredGVs.length}) --</option>
+                                            {filteredGVs.map(gv => (
+                                                <option key={gv.id} value={gv.id}>
+                                                    {gv.hoten} (ID: {gv.id}) {gv.tenkhoa ? ` - ${gv.tenkhoa}` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
 
                                 {/* Tìm kiếm môn */}
                                 <div className="mb-3">
                                     <div className="input-group">
                                         <input type="text" className="form-control" placeholder="Tìm môn học..."
-                                            value={monSearch} onChange={e => setMonSearch(e.target.value)} />
-                                        <span className="input-group-text"><i className="fa fa-search"></i></span>
+                                            value={monSearch} 
+                                            onChange={e => setMonSearch(e.target.value)}
+                                            onKeyDown={e => e.key === 'Enter' && setMonSearch(monSearch)} />
+                                        <button type="button" className="input-group-text btn btn-alt-secondary">
+                                            <i className="fa fa-search"></i>
+                                        </button>
                                     </div>
                                 </div>
 

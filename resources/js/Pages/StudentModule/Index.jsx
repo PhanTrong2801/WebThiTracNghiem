@@ -44,9 +44,16 @@ export default function StudentModuleIndex() {
         });
     };
 
+    // Debounce search
+    useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/student/modules', { hienthi, search }, { preserveState: true, replace: true });
+        }, 300);
+        return () => clearTimeout(t);
+    }, [search, hienthi]);
+
     const handleFilterChange = (val) => {
         setHienthi(val);
-        router.get('/student/modules', { hienthi: val, search }, { preserveState: true });
     };
 
     const openDetails = (group) => {
@@ -100,7 +107,6 @@ export default function StudentModuleIndex() {
                                 placeholder="Tìm tên nhóm hoặc môn học..." 
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                onBlur={() => router.get('/student/modules', { hienthi, search }, { preserveState: true })}
                             />
                         </div>
                     </div>
