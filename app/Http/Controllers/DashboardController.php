@@ -58,13 +58,20 @@ class DashboardController extends Controller
             if (!isset($stats['totalStudents'])) {
                 $stats['totalStudents'] = DB::table('users')->where('manhomquyen', 3)->count();
             }
-            // Có thể thêm số lượng học phần/đề thi của GV đó ở đây...
-            $stats['teacherStats'] = true; // Flag for GV view
+            $stats['teacherStats'] = true;
+            // Số lượng nhóm học phần do giảng viên này quản lý (Bảng nhom dùng cột giangvien)
+            $stats['totalManagedGroups'] = DB::table('nhom')->where('giangvien', $user->id)->count();
+            // Số lượng câu hỏi (Bảng cauhoi dùng cột nguoitao)
+            $stats['totalQuestionsCreated'] = DB::table('cauhoi')->where('nguoitao', $user->id)->count();
         }
 
         // Thống kê Sinh viên
         if (isset($permissions['tghocphan']) || isset($permissions['tgthi'])) {
-            $stats['studentStats'] = true; // Flag for SV view
+            $stats['studentStats'] = true;
+            $stats['totalJoinedGroups'] = DB::table('chitietnhom')->where('manguoidung', $user->id)->count();
+            // Bạn có thể thêm thống kê bài thi sắp tới nếu có bảng dethi/lichthi
+            $stats['totalUpcomingTests'] = 0; // Tạm thời để 0 nếu chưa có logic thi
+            $stats['totalTestResults'] = 0;   // Tạm thời để 0
         }
 
         return Inertia::render('Dashboard', [

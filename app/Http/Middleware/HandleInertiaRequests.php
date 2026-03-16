@@ -52,7 +52,7 @@ class HandleInertiaRequests extends Middleware
                         [
                             'name'  => 'Học phần',
                             'icon'  => 'fa fa-users-line',
-                            'url'   => 'client/group',
+                            'url'   => 'student/modules',
                             'role'  => 'tghocphan'
                         ],
                         [
@@ -70,7 +70,7 @@ class HandleInertiaRequests extends Middleware
                         [
                             'name'  => 'Nhóm học phần',
                             'icon'  => 'fa fa-layer-group',
-                            'url'   => 'module',
+                            'url'   => 'modules',
                             'role'  => 'hocphan'
                         ],
                         [

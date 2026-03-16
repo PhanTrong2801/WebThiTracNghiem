@@ -55,12 +55,6 @@ export default function Login({ status, canResetPassword }) {
     const submit = (e) => {
         e.preventDefault();
 
-        // Kiểm tra định dạng ID
-        if (!data.id.startsWith('DH')) {
-            alert('ID đăng nhập phải bắt đầu bằng cụm từ "DH"');
-            return;
-        }
-
         // Xử lý lưu trữ LocalStorage
         if (data.remember) {
             const expiryTime = new Date().getTime() + 5 * 24 * 60 * 60 * 1000;

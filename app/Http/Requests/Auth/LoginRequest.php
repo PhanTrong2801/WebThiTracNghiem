@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => ['required', 'string', 'starts_with:DH'],
+            'id' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,40 +41,19 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // 1. Nhận id thay vì email
-        $id = $this->input('id');
-        $password = $this->input('password');
+        $identifier = $this->string('id')->trim();
+        $fieldType = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'id';
 
-        // 2. Tìm User để kiểm tra trạng thái khóa 
-        $user = \App\Models\UserModel::find($id);
-
-        if (!$user) {
-            // Quăng lỗi nếu không tồn tại
-            throw ValidationException::withMessages([
-                'id' => 'Tài khoản không tồn tại!',
-            ]);
-        }
-
-        if ($user->trangthai == 0) {
-            // Quăng lỗi nếu bị khóa
-            throw ValidationException::withMessages([
-                'id' => 'Tài khoản đã bị khóa!',
-            ]);
-        }
-
-        // 3. Thực hiện Auth::attempt() dựa vào cột id (vì id đang lưu ở id)
-        $remember = $this->boolean('remember') || $this->input('remember') === true || $this->input('remember') === 'on';
-if (! Auth::attempt(['id' => $id, 'password' => $password], $remember)) {
+        if (! Auth::attempt([$fieldType => $identifier, 'password' => $this->password], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'id' => 'Sai mật khẩu!', // Báo lỗi tài khoản / mật khẩu sai
+                'id' => trans('auth.failed'),
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
     }
-
 
     /**
      * Ensure the login request is not rate limited.
@@ -92,7 +71,7 @@ if (! Auth::attempt(['id' => $id, 'password' => $password], $remember)) {
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'id' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -104,6 +83,6 @@ if (! Auth::attempt(['id' => $id, 'password' => $password], $remember)) {
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('id')).'|'.$this->ip());
     }
 }

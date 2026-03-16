@@ -54,8 +54,8 @@
         @inertia
 
         <!-- Dashmix Core JS -->
+        <!-- jQuery loaded here; dashmix.app.min.js is loaded dynamically by app.jsx after React mounts -->
         <script src="{{ asset('js/lib/jquery.min.js') }}"></script>
-        <script src="{{ asset('js/dashmix.app.min.js') }}"></script>
         
         <!-- Page Plugins -->
         <script src="{{ asset('js/plugins/slick-carousel/slick.min.js') }}"></script>

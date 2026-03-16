@@ -26,7 +26,7 @@ const Header = ({ user, onToggleSidebarMini, isDarkMode }) => {
                         <div className="dropdown-menu dropdown-menu-end p-0" aria-labelledby="page-header-user-dropdown">
                             <div className="bg-body-light rounded-top fw-semibold text-center p-3 border-bottom">
                                 <span className="avatar-Account">
-                                    <img className="img-avatar img-avatar48 img-avatar-thumb" src={`/public/media/avatars/${user?.avatar || 'avatar2.jpg'}`} alt=""/>
+                                    <img className="img-avatar img-avatar48 img-avatar-thumb" src={`/media/avatars/${user?.avatar || 'avatar2.jpg'}`} alt=""/>
                                 </span>
                                 <div className="pt-2 load-nameAccount">
                                     <a className="fw-semibold" style={{ color: '#3b82f6' }}>

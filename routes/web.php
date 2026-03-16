@@ -50,9 +50,34 @@ Route::middleware('auth')->group(function () {
 
     // Chương (Chapter)
     Route::get('/chapters/subject/{mamonhoc}', [ChapterController::class, 'getBySubject'])->name('chapters.bySubject');
-    Route::post('/chapters', [ChapterController::class, 'store'])->name('chapters.store');
-    Route::put('/chapters/{id}', [ChapterController::class, 'update'])->name('chapters.update');
-    Route::delete('/chapters/{id}', [ChapterController::class, 'destroy'])->name('chapters.destroy');
+    // Chapters...
+
+    // Nhóm học phần (Module) - Cho giảng viên/admin
+    Route::get('/modules', [\App\Http\Controllers\ModuleController::class, 'index'])->name('modules.index');
+    Route::post('/modules', [\App\Http\Controllers\ModuleController::class, 'store'])->name('modules.store');
+    Route::put('/modules/{id}', [\App\Http\Controllers\ModuleController::class, 'update'])->name('modules.update');
+    Route::delete('/modules/{id}', [\App\Http\Controllers\ModuleController::class, 'destroy'])->name('modules.destroy');
+    Route::patch('/modules/{id}/visibility', [\App\Http\Controllers\ModuleController::class, 'toggleVisibility']);
+    Route::patch('/modules/{id}/invite-code', [\App\Http\Controllers\ModuleController::class, 'refreshInviteCode']);
+    Route::get('/modules/{id}/students', [\App\Http\Controllers\ModuleController::class, 'getStudents']);
+    Route::post('/modules/{id}/students', [\App\Http\Controllers\ModuleController::class, 'addStudent']);
+    Route::delete('/modules/{id}/students/{uid}', [\App\Http\Controllers\ModuleController::class, 'removeStudent']);
+
+    // Phân công (Assignment) - Cho admin
+    Route::get('/assignment', [\App\Http\Controllers\AssignmentController::class, 'index'])->name('assignment.index');
+    Route::post('/assignment', [\App\Http\Controllers\AssignmentController::class, 'store'])->name('assignment.store');
+    Route::get('/assignment/user/{uid}', [\App\Http\Controllers\AssignmentController::class, 'getByUser']);
+    Route::delete('/assignment/{mamonhoc}/{uid}', [\App\Http\Controllers\AssignmentController::class, 'destroy'])->name('assignment.destroy');
+    Route::delete('/assignment/user/{uid}', [\App\Http\Controllers\AssignmentController::class, 'destroyAll'])->name('assignment.destroyAll');
+
+    // Học phần của sinh viên (Student Modules)
+    Route::group(['prefix' => 'student'], function () {
+        Route::get('/modules', [\App\Http\Controllers\StudentModuleController::class, 'index'])->name('student.modules.index');
+        Route::post('/modules/join', [\App\Http\Controllers\StudentModuleController::class, 'join'])->name('student.modules.join');
+        Route::delete('/modules/{id}/leave', [\App\Http\Controllers\StudentModuleController::class, 'leave'])->name('student.modules.leave');
+        Route::patch('/modules/{id}/visibility', [\App\Http\Controllers\StudentModuleController::class, 'toggleVisibility'])->name('student.modules.visibility');
+        Route::get('/modules/{id}/members', [\App\Http\Controllers\StudentModuleController::class, 'getMembers']);
+    });
 });
 
 require __DIR__.'/auth.php';

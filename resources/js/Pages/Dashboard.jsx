@@ -170,21 +170,21 @@ export default function Dashboard() {
                         <>
                             <StatCard 
                                 title="Học phần quản lý" 
-                                value={0} // Dữ liệu giả
+                                value={stats.totalManagedGroups || 0} 
                                 icon="fa-book" 
-                                link="#" 
+                                link="/modules" 
                                 colorClass="primary" 
                             />
                             <StatCard 
                                 title="Ngân hàng câu hỏi" 
-                                value={0} // Dữ liệu giả 
+                                value={stats.totalQuestionsCreated || 0} 
                                 icon="fa-list" 
-                                link="#" 
+                                link="/questions" 
                                 colorClass="warning" 
                             />
                             <StatCard 
                                 title="Đề thi đã tạo" 
-                                value={0} // Dữ liệu giả
+                                value={0} // Tạm thời để 0
                                 icon="fa-file-lines" 
                                 link="#" 
                                 colorClass="info" 
@@ -197,21 +197,21 @@ export default function Dashboard() {
                         <>
                             <StatCard 
                                 title="Học phần tham gia" 
-                                value={0} // Dữ liệu giả
+                                value={stats.totalJoinedGroups || 0} 
                                 icon="fa-book-open" 
-                                link="#" 
+                                link="/student/modules" 
                                 colorClass="primary" 
                             />
                             <StatCard 
                                 title="Bài thi sắp tới" 
-                                value={0} // Dữ liệu giả
+                                value={stats.totalUpcomingTests || 0} 
                                 icon="fa-clock" 
                                 link="#" 
                                 colorClass="warning" 
                             />
                             <StatCard 
                                 title="Kết quả bài thi" 
-                                value={0} // Dữ liệu giả
+                                value={stats.totalTestResults || 0} 
                                 icon="fa-check-circle" 
                                 link="#" 
                                 colorClass="success" 
@@ -225,7 +225,7 @@ export default function Dashboard() {
             {/* Modal Onboarding */}
             <div className="modal fade" id="modal-onboarding" tabIndex="-1" role="dialog" aria-labelledby="modal-onboarding" aria-hidden="true">
                 <div className="modal-dialog modal-lg modal-dialog-centered" role="document">
-                    <div className="modal-content rounded overflow-hidden bg-image bg-image-bottom border-0" style={{ backgroundImage: "url('/public/media/photos/photo23.jpg')" }}>
+                    <div className="modal-content rounded overflow-hidden bg-image bg-image-bottom border-0" style={{ backgroundImage: "url('/media/photos/photo23.jpg')" }}>
                         <div className="row">
                             <div className="col-md-5">
                                 <div className="p-3 text-end text-md-start">
