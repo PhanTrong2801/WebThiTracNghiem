@@ -1,25 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Components/MainLayouts';
+import Pagination from '@/Components/Pagination';
 import { Head, usePage, router } from '@inertiajs/react';
 import axios from 'axios';
 
-// Danh sách quyền CRUD chuẩn
-const ACTIONS = [
-    { key: 'view', label: 'Xem' },
-    { key: 'create', label: 'Thêm mới' },
-    { key: 'update', label: 'Cập nhật' },
-    { key: 'delete', label: 'Xoá' },
-];
-
-// Quyền đặc biệt (join)
-const SPECIAL_PERMISSIONS = [
-    { chucnang: 'tgthi', label: 'Tham gia thi' },
-    { chucnang: 'tghocphan', label: 'Tham gia học phần' },
-];
-
 export default function RolesIndex() {
-    const { auth, roles = [], danhMucChucNang = [], flash } = usePage().props;
+    const { auth, roles, crudChucNang = [], specialChucNang = [], actions = [], flash, filters } = usePage().props;
     const user = auth.user;
+    
+    // Extract pagination data
+    const { data: rolesList = [], links = [], total = 0, from = 0, to = 0 } = roles || {};
 
     // State
     const [showModal, setShowModal] = useState(false);
@@ -28,18 +18,18 @@ export default function RolesIndex() {
     const [tennhomquyen, setTennhomquyen] = useState('');
     const [checkedPermissions, setCheckedPermissions] = useState({});
     const [specialPermissions, setSpecialPermissions] = useState({});
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-    // Lọc chức năng CRUD (loại bỏ special)
-    const crudChucNang = danhMucChucNang.filter(
-        cn => !['tgthi', 'tghocphan', 'caidat', 'sinhvien'].includes(cn.chucnang)
-    );
-
-    // Lọc roles theo search
-    const filteredRoles = roles.filter(role =>
-        role.tennhomquyen.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Bắt sự kiện thay đổi searchTerm và gửi lên backend sau 300ms (debounce)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchTerm !== (filters?.search || '')) {
+                router.get('/roles', { search: searchTerm }, { preserveState: true, replace: true });
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     // Toggle checkbox CRUD
     const togglePermission = (chucnang, hanhdong) => {
@@ -155,6 +145,7 @@ export default function RolesIndex() {
                     <div className="block-header block-header-default">
                         <h3 className="block-title">Danh sách nhóm quyền</h3>
                         <div className="block-options">
+                            <span className="badge bg-primary me-3">{from}-{to} / {total} nhóm quyền</span>
                             <button
                                 type="button"
                                 className="btn btn-hero btn-primary"
@@ -195,14 +186,14 @@ export default function RolesIndex() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredRoles.length === 0 ? (
+                                            {rolesList.length === 0 ? (
                                                 <tr>
                                                     <td colSpan="4" className="text-center text-muted py-4">
                                                         Không tìm thấy nhóm quyền nào
                                                     </td>
                                                 </tr>
                                             ) : (
-                                                filteredRoles.map(role => (
+                                                rolesList.map(role => (
                                                     <tr key={role.manhomquyen}>
                                                         <td className="text-center fw-semibold">{role.manhomquyen}</td>
                                                         <td>{role.tennhomquyen}</td>
@@ -236,6 +227,13 @@ export default function RolesIndex() {
                             </div>
                         </div>
                     </div>
+                    
+                    {/* Pagination */}
+                    {links.length > 3 && (
+                        <div className="block-content block-content-full block-content-sm bg-body-light">
+                            <Pagination links={links} />
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -307,7 +305,7 @@ export default function RolesIndex() {
                                     <thead>
                                         <tr>
                                             <th>Tên quyền</th>
-                                            {ACTIONS.map(a => (
+                                            {actions.map(a => (
                                                 <th key={a.key} className="text-center">{a.label}</th>
                                             ))}
                                         </tr>
@@ -316,7 +314,7 @@ export default function RolesIndex() {
                                         {crudChucNang.map(cn => (
                                             <tr key={cn.chucnang}>
                                                 <td>{cn.tenchucnang}</td>
-                                                {ACTIONS.map(a => (
+                                                {actions.map(a => (
                                                     <td key={a.key} className="text-center">
                                                         <input
                                                             className="form-check-input"
@@ -333,7 +331,7 @@ export default function RolesIndex() {
 
                                 {/* Quyền đặc biệt */}
                                 <div className="row justify-content-around mb-3">
-                                    {SPECIAL_PERMISSIONS.map(sp => (
+                                    {specialChucNang.map(sp => (
                                         <div key={sp.chucnang} className="col-6 form-check form-switch d-flex justify-content-center gap-2">
                                             <input
                                                 className="form-check-input"

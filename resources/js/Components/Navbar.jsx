@@ -1,15 +1,13 @@
-//
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { NAVBAR_MENU } from './Config'; // Sửa lại đường dẫn import file Config.js cho đúng
 
 const Navbar = ({ onToggleSidebar }) => {
-    const { url } = usePage();
-    const { auth } = usePage().props;
+    const { url, props } = usePage();
+    const { auth, global_menu = [] } = props;
     const userRole = auth?.user_role || {};
 
     const buildNavbar = () => {
-        return NAVBAR_MENU.map((group, idx) => {
+        return global_menu.map((group, idx) => {
             // Lọc các item dựa trên quyền (role) có tồn tại trong userRole hay không
             const filteredItems = group.navbarItem?.filter(item => 
                 userRole.hasOwnProperty(item.role)

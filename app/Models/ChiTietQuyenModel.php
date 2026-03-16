@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ChiTietQuyen extends Model
+class ChiTietQuyenModel extends Model
 {
     protected $table = 'chitietquyen';
     public $incrementing = false;
@@ -19,7 +19,7 @@ class ChiTietQuyen extends Model
      */
     public function nhomQuyen()
     {
-        return $this->belongsTo(NhomQuyen::class, 'manhomquyen', 'manhomquyen');
+        return $this->belongsTo(NhomQuyenModel::class, 'manhomquyen', 'manhomquyen');
     }
 
     /**
@@ -27,6 +27,6 @@ class ChiTietQuyen extends Model
      */
     public function danhMucChucNang()
     {
-        return $this->belongsTo(DanhMucChucNang::class, 'chucnang', 'chucnang');
+        return $this->belongsTo(DanhMucChucNangModel::class, 'chucnang', 'chucnang');
     }
 }

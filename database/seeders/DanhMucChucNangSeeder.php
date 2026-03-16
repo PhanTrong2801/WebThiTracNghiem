@@ -19,6 +19,7 @@ class DanhMucChucNangSeeder extends Seeder
             ['chucnang' => 'chuong', 'tenchucnang' => 'Quản lý chương'],
             ['chucnang' => 'dethi', 'tenchucnang' => 'Quản lý đề thi'],
             ['chucnang' => 'hocphan', 'tenchucnang' => 'Quản lý học phần'],
+            ['chucnang' => 'khoa', 'tenchucnang' => 'Quản lý ngành/khoa'],
             ['chucnang' => 'monhoc', 'tenchucnang' => 'Quản lý môn học'],
             ['chucnang' => 'nguoidung', 'tenchucnang' => 'Quản lý người dùng'],
             ['chucnang' => 'nhomquyen', 'tenchucnang' => 'Quản lý nhóm quyền'],

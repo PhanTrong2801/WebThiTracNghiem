@@ -4,7 +4,7 @@ import { Head, usePage, Link } from '@inertiajs/react';
 import axios from 'axios';
 
 export default function Dashboard() {
-    const { auth, stats, roleName, roleId } = usePage().props;
+    const { auth, stats, roleName, roleId, tenKhoa } = usePage().props;
     const user = auth.user;
     const [email, setEmail] = useState('');
     const [showOnboarding, setShowOnboarding] = useState(false);
@@ -71,7 +71,7 @@ export default function Dashboard() {
                                 Chào mừng, {user.hoten}!
                             </h1>
                             <h2 className="fs-base lh-base fw-medium text-muted mb-0">
-                                Vai trò hiện tại của bạn là <span className="fw-semibold text-primary">{roleName}</span>.
+                                Vai trò hiện tại của bạn là <span className="fw-semibold text-primary">{roleName}</span> - Khoa: <span className="fw-semibold text-primary">{tenKhoa}</span>
                             </h2>
                         </div>
                     </div>
@@ -80,129 +80,145 @@ export default function Dashboard() {
 
             {/* Nội dung Dashboard tuỳ theo chức vụ (Dựa trên Quyền/Chức năng chi tiết) */}
             <div className="content">
-                {/* ---------- ROLE 1: ADMIN (Có quyền quản lý người dùng hoặc nhóm quyền) ---------- */}
-                {(auth.user_role?.nguoidung || auth.user_role?.nhomquyen) && (
-                    <div className="row">
+                <div className="row">
+                    {/* Các thẻ Thống kê độc lập */}
+                    
+                    {/* Khoa */}
+                    {stats?.hasOwnProperty('totalKhoa') && (
                         <StatCard 
                             title="Khoa" 
-                            value={stats?.totalKhoa || 0} 
+                            value={stats.totalKhoa} 
                             icon="fa-building" 
                             link="/khoa" 
                             colorClass="primary" 
                         />
-                        <StatCard 
-                            title="Người dùng" 
-                            value={stats?.totalUsers || 0} 
-                            icon="fa-users" 
-                            link="/users" 
-                            colorClass="dark" 
-                        />
-                        <StatCard 
-                            title="Quản trị viên" 
-                            value={stats?.totalAdmins || 0} 
-                            icon="fa-user-shield" 
-                            link="#" 
-                            colorClass="danger" 
-                        />
-                        <StatCard 
-                            title="Giảng viên" 
-                            value={stats?.totalTeachers || 0} 
-                            icon="fa-chalkboard-user" 
-                            link="#" 
-                            colorClass="info" 
-                        />
+                    )}
+
+                    {/* Người dùng - Giảng viên - Sinh viên - Quản trị viên */}
+                    {stats?.hasOwnProperty('totalUsers') && (
+                        <>
+                            <StatCard 
+                                title="Người dùng" 
+                                value={stats.totalUsers} 
+                                icon="fa-users" 
+                                link="/users" 
+                                colorClass="dark" 
+                            />
+                            <StatCard 
+                                title="Quản trị viên" 
+                                value={stats.totalAdmins} 
+                                icon="fa-user-shield" 
+                                link="#" 
+                                colorClass="danger" 
+                            />
+                            <StatCard 
+                                title="Giảng viên" 
+                                value={stats.totalTeachers} 
+                                icon="fa-chalkboard-user" 
+                                link="#" 
+                                colorClass="info" 
+                            />
+                        </>
+                    )}
+
+                    {/* Môn học */}
+                    {stats?.hasOwnProperty('totalSubjects') && (
                         <StatCard 
                             title="Môn học" 
-                            value={stats?.totalSubjects || 0} 
+                            value={stats.totalSubjects} 
                             icon="fa-book" 
                             link="/monhoc" 
                             colorClass="warning" 
                         />
+                    )}
+
+                    {/* Chương */}
+                    {stats?.hasOwnProperty('totalChapters') && (
                         <StatCard 
                             title="Chương" 
-                            value={stats?.totalChapters || 0} 
+                            value={stats.totalChapters} 
                             icon="fa-list-ol" 
                             link="/chapter" 
                             colorClass="primary" 
                         />
+                    )}
+
+                    {/* Sinh viên (nếu được cấp ở quyền người dùng hoặc quyền giảng dạy) */}
+                    {stats?.hasOwnProperty('totalStudents') && (
                         <StatCard 
                             title="Sinh viên" 
-                            value={stats?.totalStudents || 0} 
+                            value={stats.totalStudents} 
                             icon="fa-user-graduate" 
                             link="#" 
                             colorClass="success" 
                         />
+                    )}
+
+                    {/* Nhóm quyền */}
+                    {stats?.hasOwnProperty('totalRoles') && (
                         <StatCard 
                             title="Nhóm Quyền" 
-                            value={stats?.totalRoles || 0} 
+                            value={stats.totalRoles} 
                             icon="fa-lock" 
                             link="/roles" 
                             colorClass="warning" 
                         />
-                    </div>
-                )}
+                    )}
 
+                    {/* ---------- ROLE 2: GIẢNG VIÊN (Có quyền tham gia giảng dạy/tạo đề) ---------- */}
+                    {stats?.hasOwnProperty('teacherStats') && (
+                        <>
+                            <StatCard 
+                                title="Học phần quản lý" 
+                                value={0} // Dữ liệu giả
+                                icon="fa-book" 
+                                link="#" 
+                                colorClass="primary" 
+                            />
+                            <StatCard 
+                                title="Ngân hàng câu hỏi" 
+                                value={0} // Dữ liệu giả 
+                                icon="fa-list" 
+                                link="#" 
+                                colorClass="warning" 
+                            />
+                            <StatCard 
+                                title="Đề thi đã tạo" 
+                                value={0} // Dữ liệu giả
+                                icon="fa-file-lines" 
+                                link="#" 
+                                colorClass="info" 
+                            />
+                        </>
+                    )}
 
-                {/* ---------- ROLE 2: GIẢNG VIÊN (Có quyền tham gia giảng dạy/tạo đề) ---------- */}
-                {(auth.user_role?.dethi || auth.user_role?.hocphan || auth.user_role?.cauhoi) && (
-                    <div className="row">
-                        <StatCard 
-                            title="Học phần quản lý" 
-                            value={0} // Dữ liệu giả
-                            icon="fa-book" 
-                            link="#" 
-                            colorClass="primary" 
-                        />
-                        <StatCard 
-                            title="Sinh viên" 
-                            value={stats?.totalStudents || 0} 
-                            icon="fa-users" 
-                            link="#" 
-                            colorClass="success" 
-                        />
-                        <StatCard 
-                            title="Ngân hàng câu hỏi" 
-                            value={0} // Dữ liệu giả 
-                            icon="fa-list" 
-                            link="#" 
-                            colorClass="warning" 
-                        />
-                        <StatCard 
-                            title="Đề thi đã tạo" 
-                            value={0} // Dữ liệu giả
-                            icon="fa-file-lines" 
-                            link="#" 
-                            colorClass="info" 
-                        />
-                    </div>
-                )}
-
-                {/* ---------- ROLE 3: SINH VIÊN (Có quyền tham gia học phần hoặc thi) ---------- */}
-                {(auth.user_role?.tghocphan || auth.user_role?.tgthi) && (
-                    <div className="row">
-                        <StatCard 
-                            title="Học phần tham gia" 
-                            value={0} // Dữ liệu giả
-                            icon="fa-book-open" 
-                            link="#" 
-                            colorClass="primary" 
-                        />
-                        <StatCard 
-                            title="Bài thi sắp tới" 
-                            value={0} // Dữ liệu giả
-                            icon="fa-clock" 
-                            link="#" 
-                            colorClass="warning" 
-                        />
-                        <StatCard 
-                            title="Kết quả bài thi" 
-                            value={0} // Dữ liệu giả
-                            icon="fa-check-circle" 
-                            link="#" 
-                            colorClass="success" 
-                        />
-                    </div>
-                )}
+                    {/* ---------- ROLE 3: SINH VIÊN (Có quyền tham gia học phần hoặc thi) ---------- */}
+                    {stats?.hasOwnProperty('studentStats') && (
+                        <>
+                            <StatCard 
+                                title="Học phần tham gia" 
+                                value={0} // Dữ liệu giả
+                                icon="fa-book-open" 
+                                link="#" 
+                                colorClass="primary" 
+                            />
+                            <StatCard 
+                                title="Bài thi sắp tới" 
+                                value={0} // Dữ liệu giả
+                                icon="fa-clock" 
+                                link="#" 
+                                colorClass="warning" 
+                            />
+                            <StatCard 
+                                title="Kết quả bài thi" 
+                                value={0} // Dữ liệu giả
+                                icon="fa-check-circle" 
+                                link="#" 
+                                colorClass="success" 
+                            />
+                        </>
+                    )}
+                </div>
 
             </div>
 

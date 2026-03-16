@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,13 +11,24 @@ class UserController extends Controller
     /**
      * Hiển thị danh sách users (Frontend - Inertia)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen')
-            ->paginate(10);
+        $query = UserModel::with(['khoa', 'nhomquyen'])
+            ->select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen', 'makhoa');
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where(function($q) use ($request) {
+                $q->where('hoten', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%')
+                  ->orWhere('id', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $users = $query->paginate(10)->withQueryString();
 
         return Inertia::render('Users/Index', [
             'users' => $users,
+            'filters' => $request->only('search')
         ]);
     }
 
@@ -27,7 +38,7 @@ class UserController extends Controller
      */
     public function apiIndex()
     {
-        $users = User::select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen')
+        $users = UserModel::select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen')
             ->paginate(10);
 
         return response()->json([
@@ -43,7 +54,7 @@ class UserController extends Controller
      */
     public function apiShow(string $id)
     {
-        $user = User::select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen')
+        $user = UserModel::select('id', 'hoten', 'email', 'gioitinh', 'ngaysinh', 'trangthai', 'manhomquyen')
             ->find($id);
 
         if (!$user) {

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class UserModel extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<\Database\Factories\UserModelFactory> */
     use HasFactory, Notifiable;
+    
+    protected $table = 'users';
 
     // Khóa chính là string, không tự tăng
     public $incrementing = false;
@@ -75,9 +77,9 @@ class User extends Authenticatable
     /**
      * Nhóm quyền của user
      */
-    public function nhomQuyen()
+    public function nhomquyen()
     {
-        return $this->belongsTo(NhomQuyen::class, 'manhomquyen', 'manhomquyen');
+        return $this->belongsTo(NhomQuyenModel::class, 'manhomquyen', 'manhomquyen');
     }
 
     /**
@@ -85,7 +87,7 @@ class User extends Authenticatable
      */
     public function khoa()
     {
-        return $this->belongsTo(Khoa::class, 'makhoa', 'id');
+        return $this->belongsTo(KhoaModel::class, 'makhoa', 'id');
     }
 
 
@@ -98,7 +100,7 @@ class User extends Authenticatable
             return [];
         }
 
-        $chiTietQuyen = \App\Models\ChiTietQuyen::where('manhomquyen', $this->manhomquyen)->get();
+        $chiTietQuyen = \App\Models\ChiTietQuyenModel::where('manhomquyen', $this->manhomquyen)->get();
         $roles = [];
         foreach ($chiTietQuyen as $item) {
             if (!isset($roles[$item->chucnang])) {

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class NhomQuyen extends Model
+class NhomQuyenModel extends Model
 {
     protected $table = 'nhomquyen';
     protected $primaryKey = 'manhomquyen';
@@ -17,7 +17,7 @@ class NhomQuyen extends Model
      */
     public function chiTietQuyen()
     {
-        return $this->hasMany(ChiTietQuyen::class, 'manhomquyen', 'manhomquyen');
+        return $this->hasMany(ChiTietQuyenModel::class, 'manhomquyen', 'manhomquyen');
     }
 
     /**
@@ -25,7 +25,7 @@ class NhomQuyen extends Model
      */
     public function users()
     {
-        return $this->hasMany(User::class, 'manhomquyen', 'manhomquyen');
+        return $this->hasMany(UserModel::class, 'manhomquyen', 'manhomquyen');
     }
 
     /**

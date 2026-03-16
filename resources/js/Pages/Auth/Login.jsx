@@ -88,12 +88,11 @@ export default function Login({ status, canResetPassword }) {
     return (
         <div
             id="page-container"
-            className="main-content-boxed remember-theme"
-            style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fc' }}
+            className="main-content-boxed remember-theme login-page-container"
         >
             <Head title="Đăng nhập" />
 
-            <div className="block block-rounded shadow-lg overflow-hidden" style={{ maxWidth: '900px', width: '100%', margin: '2rem auto', background: '#fff' }}>
+            <div className="block block-rounded shadow-lg overflow-hidden login-box">
                 <div className="row g-0">
                     {/* Left panel: branding */}
                     <div className="col-md-5 bg-body-extra-light d-flex flex-column align-items-center justify-content-center p-5 border-end">
@@ -101,8 +100,7 @@ export default function Login({ status, canResetPassword }) {
                             <img
                                 src="/img/logo_truong.png"
                                 alt="Logo Trường STU"
-                                className="img-fluid mb-4"
-                                style={{ maxWidth: '180px' }}
+                                className="img-fluid mb-4 login-logo"
                             />
                         </Link>
                         <h2 className="fw-bold fs-4 text-center mb-2">STU Test</h2>
@@ -168,9 +166,8 @@ export default function Login({ status, canResetPassword }) {
                                     />
                                     <button
                                         type="button"
-                                        className="input-group-text bg-body-extra-light border-start-0"
+                                        className="input-group-text bg-body-extra-light border-start-0 login-password-toggle"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        style={{ cursor: 'pointer', borderLeft: 'none' }}
                                     >
                                         <i className={`fa ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
                                     </button>
@@ -180,7 +177,7 @@ export default function Login({ status, canResetPassword }) {
 
                             {/* Remember me & Forgot password */}
                             <div className="d-flex align-items-center justify-content-between mb-4">
-                                <label className="d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer' }}>
+                                <label className="d-flex align-items-center gap-2 mb-0 login-remember-label">
                                     <Checkbox
                                         name="remember"
                                         checked={data.remember}

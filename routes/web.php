@@ -33,6 +33,9 @@ Route::middleware('auth')->group(function () {
 
     // Nhóm quyền (Roles)
     Route::resource('roles', RoleController::class)->except(['create', 'edit']);
+
+    // Ngành/Khoa (Khoa)
+    Route::resource('khoa', \App\Http\Controllers\KhoaController::class)->except(['create', 'edit', 'show']);
 });
 
 require __DIR__.'/auth.php';

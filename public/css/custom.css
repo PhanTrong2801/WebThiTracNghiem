@@ -70,7 +70,7 @@ td p {
 [data-notify] { z-index: 9999 !important; }
 
 
-/* Landing page */
+/* --- Đang được sử dụng ở Landing Page (Welcome.jsx) --- */
 /* Responsive nav */
 @media (max-width: 991px) {
     .nav {
@@ -175,7 +175,7 @@ td p {
 .hero-bubbles .hero-bubble:nth-child(even){animation:hero-bubble 20s infinite ease-in reverse}
 @keyframes hero-bubble{0%{transform:scale(1)}33%{transform:scale(1.5) translateY(1rem)}50%{opacity:.5}66%{transform:scale(.5) translateY(0)}100%{transform:scale(1);opacity:.2}}
 
-/* Responsive Test */
+/* Responsive Test (Chưa sử dụng) */
 @media (max-width: 480px) {
     .sidebar-answer {
         display: none;
@@ -276,4 +276,33 @@ td p {
 
 .truncate--6 {
     -webkit-line-clamp: 6;
+}
+
+/* --- Đang được sử dụng ở trang Đăng nhập (Login.jsx) --- */
+.login-page-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fc;
+}
+
+.login-box {
+    max-width: 900px;
+    width: 100%;
+    margin: 2rem auto;
+    background: #fff;
+}
+
+.login-logo {
+    max-width: 180px;
+}
+
+.login-password-toggle {
+    cursor: pointer;
+    border-left: none;
+}
+
+.login-remember-label {
+    cursor: pointer;
 }

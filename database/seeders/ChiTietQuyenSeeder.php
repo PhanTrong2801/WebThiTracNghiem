@@ -52,7 +52,7 @@ class ChiTietQuyenSeeder extends Seeder
             ['manhomquyen' => 1, 'chucnang' => 'thongbao', 'hanhdong' => 'update'],
             ['manhomquyen' => 1, 'chucnang' => 'thongbao', 'hanhdong' => 'view'],
 
-            // Nhóm quyền 10 đổi thành 2
+            // Nhóm quyền 2
             ['manhomquyen' => 2, 'chucnang' => 'cauhoi', 'hanhdong' => 'create'],
             ['manhomquyen' => 2, 'chucnang' => 'cauhoi', 'hanhdong' => 'view'],
             ['manhomquyen' => 2, 'chucnang' => 'dethi', 'hanhdong' => 'create'],
@@ -70,7 +70,7 @@ class ChiTietQuyenSeeder extends Seeder
             ['manhomquyen' => 2, 'chucnang' => 'thongbao', 'hanhdong' => 'update'],
             ['manhomquyen' => 2, 'chucnang' => 'thongbao', 'hanhdong' => 'view'],
 
-            // Nhóm quyền 11 đổi thành 3
+            // Nhóm quyền 3
             ['manhomquyen' => 3, 'chucnang' => 'tghocphan', 'hanhdong' => 'join'],
             ['manhomquyen' => 3, 'chucnang' => 'tgthi', 'hanhdong' => 'join'],
         ];

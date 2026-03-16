@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Khoa extends Model
+class KhoaModel extends Model
 {
     use HasFactory;
 
@@ -22,6 +22,6 @@ class Khoa extends Model
      */
     public function users()
     {
-        return $this->hasMany(User::class, 'makhoa', 'id');
+        return $this->hasMany(UserModel::class, 'makhoa', 'id');
     }
 }
