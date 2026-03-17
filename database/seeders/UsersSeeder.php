@@ -38,7 +38,7 @@ class UsersSeeder extends Seeder
                 'trangthai' => 1,
                 'sodienthoai' => null,
                 'manhomquyen' => 1,
-                'makhoa' => 2,
+                'makhoa' => 1,
             ],
             [
                 'id' => 'DH123456',

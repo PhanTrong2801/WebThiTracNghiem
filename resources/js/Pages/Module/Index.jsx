@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/Components/MainLayouts';
 import { Head, usePage, router } from '@inertiajs/react';
 import axios from 'axios';

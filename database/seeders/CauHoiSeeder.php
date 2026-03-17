@@ -12,7 +12,7 @@ class CauHoiSeeder extends Seeder
      */
     public function run(): void
     {
-        $questions = [
+        $questions_ch1 = [
             'OOP là viết tắt của:',
             'Đặc điểm cơ bản của lập trình hướng đối tượng thể hiện ở:',
             'Lập trình hướng đối tượng là:',
@@ -75,14 +75,47 @@ class CauHoiSeeder extends Seeder
             'Cho lớp Điểm trong hệ tọa độ xOy. Các phương thức có thể của lớp điểm là:',
         ];
 
-        foreach ($questions as $index => $noidung) {
+        $questions_ch2 = [
+            'Trong Java, kiểu dữ liệu nào sau đây dùng để lưu trữ số nguyên có kích thước lớn nhất?',
+            'Đâu là cách khai báo biến hằng trong Java?',
+            'Toán tử nào dùng để so sánh bằng trong Java?',
+            'Phương thức nào dùng để xuất dữ liệu ra màn hình và kết thúc bằng một dòng mới?',
+            'Chú thích trên nhiều dòng trong Java bắt đầu và kết thúc bằng ký tự nào?',
+            'Kiểu dữ liệu char trong Java có kích thước bao nhiêu bit?',
+            'Đâu là một tên biến hợp lệ trong Java?',
+            'Kết quả của biểu thức 10 % 3 trong Java là gì?',
+            'Kiểu dữ liệu nào được sử dụng để lưu trữ giá trị đúng hoặc sai?',
+            'Từ khóa nào dùng để thoát khỏi vòng lặp hiện tại?',
+            'Biểu thức 5 + "Java" sẽ cho kết quả là gì?',
+            'Để ép kiểu từ long sang int trong Java, ta sử dụng cú pháp nào?',
+            'Toán tử && đại diện cho phép toán logic nào?',
+            'Trong Java, các biến cục bộ (local variables) phải được... trước khi sử dụng.',
+            'Giá trị mặc định của một biến số nguyên (int) khi được khai báo là thuộc tính của lớp là?',
+            'Hậu tố nào bắt buộc phải có khi khai báo một biến kiểu float?',
+            'Đâu là toán tử tăng giá trị lên 1 đơn vị?',
+            'Kiểu dữ liệu String trong Java là:',
+        ];
+
+        foreach ($questions_ch1 as $index => $noidung) {
             DB::table('cauhoi')->insert([
                 'macauhoi'   => $index + 1,
                 'noidung'    => $noidung,
-                'dokho'      => ($index % 3) + 1, 
+                'dokho'      => ($index % 3) + 1,
                 'mamonhoc'   => 'CS03015',
-                'machuong'   => 11, 
+                'machuong'   => 11,
                 'nguoitao'   => 'DH1111111',
+                'trangthai'  => 1,
+            ]);
+        }
+
+        foreach ($questions_ch2 as $index => $noidung) {
+            DB::table('cauhoi')->insert([
+                'macauhoi'   => count($questions_ch1) + $index + 1,
+                'noidung'    => $noidung,
+                'dokho'      => ($index % 3) + 1,
+                'mamonhoc'   => 'CS03015',
+                'machuong'   => 12,
+                'nguoitao'   => 'DH222222',
                 'trangthai'  => 1,
             ]);
         }

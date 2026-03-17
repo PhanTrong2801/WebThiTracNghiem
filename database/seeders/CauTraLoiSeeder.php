@@ -372,6 +372,114 @@ class CauTraLoiSeeder extends Seeder
             ['macauhoi' => 60, 'noidungtl' => 'Tung độ, hoành độ', 'ladapan' => 0],
             ['macauhoi' => 60, 'noidungtl' => 'Tung độ, hoành độ, cao độ', 'ladapan' => 0],
             ['macauhoi' => 60, 'noidungtl' => 'Tung độ, cao độ', 'ladapan' => 0],
+
+            // Câu 61: Kiểu dữ liệu số nguyên lớn nhất
+            ['macauhoi' => 61, 'noidungtl' => 'byte', 'ladapan' => 0],
+            ['macauhoi' => 61, 'noidungtl' => 'short', 'ladapan' => 0],
+            ['macauhoi' => 61, 'noidungtl' => 'int', 'ladapan' => 0],
+            ['macauhoi' => 61, 'noidungtl' => 'long', 'ladapan' => 1],
+
+            // Câu 62: Khai báo hằng số
+            ['macauhoi' => 62, 'noidungtl' => 'const int x = 10;', 'ladapan' => 0],
+            ['macauhoi' => 62, 'noidungtl' => 'final int x = 10;', 'ladapan' => 1],
+            ['macauhoi' => 62, 'noidungtl' => 'static int x = 10;', 'ladapan' => 0],
+            ['macauhoi' => 62, 'noidungtl' => 'immutable int x = 10;', 'ladapan' => 0],
+
+            // Câu 63: Toán tử so sánh bằng
+            ['macauhoi' => 63, 'noidungtl' => '=', 'ladapan' => 0],
+            ['macauhoi' => 63, 'noidungtl' => '==', 'ladapan' => 1],
+            ['macauhoi' => 63, 'noidungtl' => '===', 'ladapan' => 0],
+            ['macauhoi' => 63, 'noidungtl' => '!=', 'ladapan' => 0],
+
+            // Câu 64: Xuất dữ liệu xuống dòng
+            ['macauhoi' => 64, 'noidungtl' => 'System.out.print()', 'ladapan' => 0],
+            ['macauhoi' => 64, 'noidungtl' => 'System.out.println()', 'ladapan' => 1],
+            ['macauhoi' => 64, 'noidungtl' => 'System.out.printf()', 'ladapan' => 0],
+            ['macauhoi' => 64, 'noidungtl' => 'System.out.write()', 'ladapan' => 0],
+
+            // Câu 65: Chú thích nhiều dòng
+            ['macauhoi' => 65, 'noidungtl' => '// và //', 'ladapan' => 0],
+            ['macauhoi' => 65, 'noidungtl' => '/* và */', 'ladapan' => 1],
+            ['macauhoi' => 65, 'noidungtl' => '<!-- và -->', 'ladapan' => 0],
+            ['macauhoi' => 65, 'noidungtl' => '# và #', 'ladapan' => 0],
+
+            // Câu 66: Kích thước kiểu char
+            ['macauhoi' => 66, 'noidungtl' => '8 bit', 'ladapan' => 0],
+            ['macauhoi' => 66, 'noidungtl' => '16 bit', 'ladapan' => 1],
+            ['macauhoi' => 66, 'noidungtl' => '32 bit', 'ladapan' => 0],
+            ['macauhoi' => 66, 'noidungtl' => '64 bit', 'ladapan' => 0],
+
+            // Câu 67: Tên biến hợp lệ
+            ['macauhoi' => 67, 'noidungtl' => '1variable', 'ladapan' => 0],
+            ['macauhoi' => 67, 'noidungtl' => 'variable-name', 'ladapan' => 0],
+            ['macauhoi' => 67, 'noidungtl' => '_variableName', 'ladapan' => 1],
+            ['macauhoi' => 67, 'noidungtl' => 'class', 'ladapan' => 0],
+
+            // Câu 68: Phép toán modulo 10 % 3
+            ['macauhoi' => 68, 'noidungtl' => '0', 'ladapan' => 0],
+            ['macauhoi' => 68, 'noidungtl' => '1', 'ladapan' => 1],
+            ['macauhoi' => 68, 'noidungtl' => '2', 'ladapan' => 0],
+            ['macauhoi' => 68, 'noidungtl' => '3', 'ladapan' => 0],
+
+            // Câu 69: Kiểu dữ liệu logic
+            ['macauhoi' => 69, 'noidungtl' => 'string', 'ladapan' => 0],
+            ['macauhoi' => 69, 'noidungtl' => 'int', 'ladapan' => 0],
+            ['macauhoi' => 69, 'noidungtl' => 'boolean', 'ladapan' => 1],
+            ['macauhoi' => 69, 'noidungtl' => 'double', 'ladapan' => 0],
+
+            // Câu 70: Thoát vòng lặp
+            ['macauhoi' => 70, 'noidungtl' => 'stop', 'ladapan' => 0],
+            ['macauhoi' => 70, 'noidungtl' => 'exit', 'ladapan' => 0],
+            ['macauhoi' => 70, 'noidungtl' => 'break', 'ladapan' => 1],
+            ['macauhoi' => 70, 'noidungtl' => 'continue', 'ladapan' => 0],
+
+            // Câu 71: Chuỗi và số 5 + "Java"
+            ['macauhoi' => 71, 'noidungtl' => '5Java', 'ladapan' => 1],
+            ['macauhoi' => 71, 'noidungtl' => 'Error', 'ladapan' => 0],
+            ['macauhoi' => 71, 'noidungtl' => 'Java5', 'ladapan' => 0],
+            ['macauhoi' => 71, 'noidungtl' => '5', 'ladapan' => 0],
+
+            // Câu 72: Ép kiểu long sang int
+            ['macauhoi' => 72, 'noidungtl' => '(int) longValue', 'ladapan' => 1],
+            ['macauhoi' => 72, 'noidungtl' => 'int(longValue)', 'ladapan' => 0],
+            ['macauhoi' => 72, 'noidungtl' => 'convert(longValue, int)', 'ladapan' => 0],
+            ['macauhoi' => 72, 'noidungtl' => 'longValue.toInt()', 'ladapan' => 0],
+
+            // Câu 73: Toán tử &&
+            ['macauhoi' => 73, 'noidungtl' => 'OR', 'ladapan' => 0],
+            ['macauhoi' => 73, 'noidungtl' => 'NOT', 'ladapan' => 0],
+            ['macauhoi' => 73, 'noidungtl' => 'AND', 'ladapan' => 1],
+            ['macauhoi' => 73, 'noidungtl' => 'XOR', 'ladapan' => 0],
+
+            // Câu 74: Biến cục bộ
+            ['macauhoi' => 74, 'noidungtl' => 'Khai báo', 'ladapan' => 0],
+            ['macauhoi' => 74, 'noidungtl' => 'Khởi tạo giá trị', 'ladapan' => 1],
+            ['macauhoi' => 74, 'noidungtl' => 'Đóng gói', 'ladapan' => 0],
+            ['macauhoi' => 74, 'noidungtl' => 'Kế thừa', 'ladapan' => 0],
+
+            // Câu 75: Giá trị mặc định int
+            ['macauhoi' => 75, 'noidungtl' => '0', 'ladapan' => 1],
+            ['macauhoi' => 75, 'noidungtl' => '1', 'ladapan' => 0],
+            ['macauhoi' => 75, 'noidungtl' => 'null', 'ladapan' => 0],
+            ['macauhoi' => 75, 'noidungtl' => 'undefined', 'ladapan' => 0],
+
+            // Câu 76: Hậu tố kiểu float
+            ['macauhoi' => 76, 'noidungtl' => 'd', 'ladapan' => 0],
+            ['macauhoi' => 76, 'noidungtl' => 'l', 'ladapan' => 0],
+            ['macauhoi' => 76, 'noidungtl' => 'f', 'ladapan' => 1],
+            ['macauhoi' => 76, 'noidungtl' => 's', 'ladapan' => 0],
+
+            // Câu 77: Toán tử tăng
+            ['macauhoi' => 77, 'noidungtl' => '++', 'ladapan' => 1],
+            ['macauhoi' => 77, 'noidungtl' => '--', 'ladapan' => 0],
+            ['macauhoi' => 77, 'noidungtl' => '+=', 'ladapan' => 0],
+            ['macauhoi' => 77, 'noidungtl' => '&&', 'ladapan' => 0],
+
+            // Câu 78: Kiểu dữ liệu String
+            ['macauhoi' => 78, 'noidungtl' => 'Kiểu dữ liệu nguyên thủy (primitive)', 'ladapan' => 0],
+            ['macauhoi' => 78, 'noidungtl' => 'Kiểu dữ liệu tham chiếu (reference)', 'ladapan' => 1],
+            ['macauhoi' => 78, 'noidungtl' => 'Kiểu dữ liệu số', 'ladapan' => 0],
+            ['macauhoi' => 78, 'noidungtl' => 'Kiểu dữ liệu logic', 'ladapan' => 0],
         ];
 
         DB::table('cautraloi')->insert($cautraloi);

@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\NhomModel;
 use App\Models\ChiTietNhomModel;
+use App\Models\DeThiModel;
+use App\Models\KetQuaModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class StudentModuleController extends Controller
@@ -112,5 +115,60 @@ class StudentModuleController extends Controller
             ->get();
 
         return response()->json($members);
+    }
+
+    /**
+     * Lấy danh sách đề thi trong nhóm (JSON)
+     * - Dựa vào bảng `giaodethi`
+     * - Kèm trạng thái đã nộp/điểm nếu có (ketqua)
+     */
+    public function getTests($id)
+    {
+        $userId = Auth::id();
+
+        // Chỉ cho phép xem nếu SV thuộc nhóm
+        $isMember = ChiTietNhomModel::where('manhom', $id)
+            ->where('manguoidung', $userId)
+            ->exists();
+
+        if (!$isMember) {
+            abort(403, 'Bạn không thuộc nhóm này.');
+        }
+
+        $tests = DeThiModel::query()
+            ->select([
+                'dethi.made',
+                'dethi.tende',
+                'dethi.thoigianthi',
+                'dethi.thoigianbatdau',
+                'dethi.thoigianketthuc',
+                'dethi.monthi',
+                'monhoc.tenmonhoc',
+            ])
+            ->join('giaodethi', 'giaodethi.made', '=', 'dethi.made')
+            ->join('monhoc', 'monhoc.mamonhoc', '=', 'dethi.monthi')
+            ->where('giaodethi.manhom', $id)
+            ->where('dethi.trangthai', 1)
+            ->orderByDesc('dethi.made')
+            ->get()
+            ->map(function ($t) use ($userId) {
+                $kq = KetQuaModel::query()
+                    ->where('made', $t->made)
+                    ->where('manguoidung', $userId)
+                    ->first();
+
+                return [
+                    'made' => $t->made,
+                    'tende' => $t->tende,
+                    'thoigianthi' => $t->thoigianthi,
+                    'thoigianbatdau' => $t->thoigianbatdau,
+                    'thoigianketthuc' => $t->thoigianketthuc,
+                    'monthi' => $t->monthi,
+                    'tenmonhoc' => $t->tenmonhoc,
+                    'diemthi' => $kq?->diemthi,
+                ];
+            });
+
+        return response()->json($tests);
     }
 }

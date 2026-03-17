@@ -8,12 +8,14 @@ export default function QuestionsIndex() {
     const { auth, danhSachCauHoi, danhSachMonHoc, danhSachKhoa, flash, filters } = usePage().props;
     const user = auth.user;
     const rolePermissions = auth.user_role?.cauhoi || [];
+    const chapterPermissions = auth.user_role?.chuong || [];
 
     const { data: questionList = [], links = [], total = 0, from = 0, to = 0 } = danhSachCauHoi || {};
 
     const canCreate = rolePermissions.includes('create');
     const canUpdate = rolePermissions.includes('update');
     const canDelete = rolePermissions.includes('delete');
+    const canCreateChapter = chapterPermissions.includes('create');
 
     // ── States ────────────────────────────────────────────────────────────
     const [showModal, setShowModal]             = useState(false);
@@ -30,6 +32,11 @@ export default function QuestionsIndex() {
     // List of chapters for filter and form based on selected subject
     const [chaptersFilter, setChaptersFilter] = useState([]);
     const [chaptersForm, setChaptersForm]     = useState([]);
+
+    // Quick create chapter
+    const [showChapterModal, setShowChapterModal] = useState(false);
+    const [newChapterName, setNewChapterName] = useState('');
+    const [chapterError, setChapterError] = useState('');
 
     // Form fields
     const [form, setForm] = useState({
@@ -180,6 +187,32 @@ export default function QuestionsIndex() {
         setIsEditing(true);
         setEditId(q.macauhoi);
         setShowModal(true);
+    };
+
+    const openChapterModal = () => {
+        setChapterError('');
+        setNewChapterName('');
+        setShowChapterModal(true);
+    };
+
+    const createChapter = async () => {
+        setChapterError('');
+        if (!form.mamonhoc) { setChapterError('Vui lòng chọn Môn học trước.'); return; }
+        if (!newChapterName.trim()) { setChapterError('Vui lòng nhập tên chương.'); return; }
+
+        try {
+            await axios.post('/chapters', { mamonhoc: form.mamonhoc, tenchuong: newChapterName.trim() });
+            const res = await axios.get(`/chapters/subject/${form.mamonhoc}`);
+            const list = res.data || [];
+            setChaptersForm(list);
+            if (list.length > 0) {
+                const max = list.reduce((acc, ch) => (Number(ch.machuong) > Number(acc.machuong) ? ch : acc), list[0]);
+                setForm(prev => ({ ...prev, machuong: max.machuong }));
+            }
+            setShowChapterModal(false);
+        } catch (e) {
+            setChapterError(e?.response?.data?.message || 'Không thể tạo chương (kiểm tra quyền hoặc dữ liệu).');
+        }
     };
 
     const handleChange = e => {
@@ -465,12 +498,25 @@ export default function QuestionsIndex() {
                                         
                                         <div className="col-md-3">
                                             <label className="form-label">Chương <span className="text-danger">*</span></label>
-                                            <select className={`form-select ${errors.machuong ? 'is-invalid' : ''}`} name="machuong" value={form.machuong} onChange={handleChange} disabled={!form.mamonhoc}>
-                                                <option value="">-- Chọn chương --</option>
-                                                {chaptersForm.map(ch => (
-                                                    <option key={ch.machuong} value={ch.machuong}>{ch.tenchuong}</option>
-                                                ))}
-                                            </select>
+                                            <div className="input-group">
+                                                <select className={`form-select ${errors.machuong ? 'is-invalid' : ''}`} name="machuong" value={form.machuong} onChange={handleChange} disabled={!form.mamonhoc}>
+                                                    <option value="">-- Chọn chương --</option>
+                                                    {chaptersForm.map(ch => (
+                                                        <option key={ch.machuong} value={ch.machuong}>{ch.tenchuong}</option>
+                                                    ))}
+                                                </select>
+                                                {canCreateChapter && (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-alt-secondary"
+                                                        title="Thêm chương"
+                                                        onClick={openChapterModal}
+                                                        disabled={!form.mamonhoc}
+                                                    >
+                                                        <i className="fa fa-plus"></i>
+                                                    </button>
+                                                )}
+                                            </div>
                                             {errors.machuong && <div className="invalid-feedback">{errors.machuong}</div>}
                                         </div>
 
@@ -557,6 +603,40 @@ export default function QuestionsIndex() {
                                 <button type="button" className="btn btn-alt-secondary" onClick={() => setShowModal(false)}>Huỷ</button>
                                 <button type="button" className="btn btn-primary" onClick={handleSave}>
                                     {isEditing ? 'Cập nhật' : 'Lưu câu hỏi'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── CREATE CHAPTER MODAL ── */}
+            {showChapterModal && (
+                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header bg-body-light">
+                                <h5 className="modal-title">Thêm chương mới</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowChapterModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="mb-2 text-muted small">
+                                    Môn học: <code>{form.mamonhoc || '--'}</code>
+                                </div>
+                                <label className="form-label">Tên chương</label>
+                                <input
+                                    type="text"
+                                    className={`form-control ${chapterError ? 'is-invalid' : ''}`}
+                                    value={newChapterName}
+                                    onChange={(e) => setNewChapterName(e.target.value)}
+                                    placeholder="VD: Ngôn ngữ lập trình Java"
+                                />
+                                {chapterError && <div className="invalid-feedback d-block">{chapterError}</div>}
+                            </div>
+                            <div className="modal-footer bg-body-light">
+                                <button className="btn btn-alt-secondary" onClick={() => setShowChapterModal(false)}>Huỷ</button>
+                                <button className="btn btn-primary" onClick={createChapter}>
+                                    <i className="fa fa-save me-1"></i> Tạo chương
                                 </button>
                             </div>
                         </div>

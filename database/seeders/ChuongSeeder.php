@@ -26,6 +26,8 @@ class ChuongSeeder extends Seeder
             ['CS03036', 'Chương 10: Lập trình hướng đối tượng (OOP)'],
 
             ['CS03015', 'Chương 1: Ngôn ngữ lập trình Java'],
+            ['CS03015', 'Chương 2: Cú pháp cơ bản của Java'],
+
 
             // Nhập môn web và ứng dụng (CS09003)
             ['CS09003', 'Tổng quan về World Wide Web'],

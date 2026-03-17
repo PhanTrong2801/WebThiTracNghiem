@@ -6,6 +6,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -50,6 +51,9 @@ Route::middleware('auth')->group(function () {
 
     // Chương (Chapter)
     Route::get('/chapters/subject/{mamonhoc}', [ChapterController::class, 'getBySubject'])->name('chapters.bySubject');
+    Route::post('/chapters', [ChapterController::class, 'store'])->name('chapters.store');
+    Route::put('/chapters/{id}', [ChapterController::class, 'update'])->name('chapters.update');
+    Route::delete('/chapters/{id}', [ChapterController::class, 'destroy'])->name('chapters.destroy');
     // Chapters...
 
     // Nhóm học phần (Module) - Cho giảng viên/admin
@@ -77,7 +81,34 @@ Route::middleware('auth')->group(function () {
         Route::delete('/modules/{id}/leave', [\App\Http\Controllers\StudentModuleController::class, 'leave'])->name('student.modules.leave');
         Route::patch('/modules/{id}/visibility', [\App\Http\Controllers\StudentModuleController::class, 'toggleVisibility'])->name('student.modules.visibility');
         Route::get('/modules/{id}/members', [\App\Http\Controllers\StudentModuleController::class, 'getMembers']);
+        Route::get('/modules/{id}/tests', [\App\Http\Controllers\StudentModuleController::class, 'getTests']);
     });
+
+    // Đề thi (Tests/Exams)
+    Route::get('/tests', [TestController::class, 'index'])->name('tests.index');
+    Route::get('/tests/create', [TestController::class, 'create'])->name('tests.create');
+    Route::post('/tests', [TestController::class, 'store'])->name('tests.store');
+    Route::get('/tests/{made}/edit', [TestController::class, 'edit'])->name('tests.edit');
+    Route::put('/tests/{made}', [TestController::class, 'update'])->name('tests.update');
+
+    // Chọn câu hỏi cho đề (manual)
+    Route::get('/tests/{made}/select', [TestController::class, 'select'])->name('tests.select');
+    Route::post('/tests/{made}/select', [TestController::class, 'saveSelectedQuestions'])->name('tests.select.save');
+
+    // Lịch thi / đề đã giao (sinh viên)
+    Route::get('/tests/schedule', [TestController::class, 'schedule'])->name('tests.schedule');
+
+    // Vào thi / làm bài / nộp bài
+    Route::get('/tests/{made}/start', [TestController::class, 'start'])->name('tests.start');
+    Route::get('/tests/{made}/take', [TestController::class, 'take'])->name('tests.take');
+    Route::post('/tests/{made}/submit', [TestController::class, 'submit'])->name('tests.submit');
+
+    // Thống kê / kết quả (giảng viên)
+    Route::get('/tests/{made}/results', [TestController::class, 'results'])->name('tests.results');
+
+    // Alias routes để khớp menu/layout cũ (dùng trong `global_menu`)
+    Route::get('/test', [TestController::class, 'index'])->name('test.index');
+    Route::get('/client/test', [TestController::class, 'schedule'])->name('client.test.schedule');
 });
 
 require __DIR__.'/auth.php';

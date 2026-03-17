@@ -19,6 +19,8 @@ export default function StudentModuleIndex() {
     const [showOffcanvas, setShowOffcanvas] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [members, setMembers] = useState([]);
+    const [groupTests, setGroupTests] = useState([]);
+    const [testsLoading, setTestsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('tests'); // tests, announcements, friends
 
     const handleJoin = () => {
@@ -64,6 +66,13 @@ export default function StudentModuleIndex() {
         axios.get(`/student/modules/${group.manhom}/members`)
             .then(res => setMembers(res.data))
             .catch(err => console.error(err));
+
+        // Load tests for group
+        setTestsLoading(true);
+        axios.get(`/student/modules/${group.manhom}/tests`)
+            .then(res => setGroupTests(res.data || []))
+            .catch(err => { console.error(err); setGroupTests([]); })
+            .finally(() => setTestsLoading(false));
     };
 
     const filteredGroups = joinedGroups.filter(g => 
@@ -235,7 +244,41 @@ export default function StudentModuleIndex() {
                     <div className="tab-content p-3">
                         {activeTab === 'tests' && (
                             <div className="tab-pane active">
-                                <p className="text-center text-muted py-4">Chưa có đề thi nào trong nhóm này.</p>
+                                {testsLoading ? (
+                                    <p className="text-center text-muted py-4">Đang tải đề thi...</p>
+                                ) : (groupTests.length === 0 ? (
+                                    <p className="text-center text-muted py-4">Chưa có đề thi nào trong nhóm này.</p>
+                                ) : (
+                                    <div className="list-group">
+                                        {groupTests.map(t => (
+                                            <div key={t.made} className="list-group-item">
+                                                <div className="d-flex justify-content-between align-items-start gap-2">
+                                                    <div>
+                                                        <div className="fw-semibold">
+                                                            <span className="badge bg-primary me-2">#{t.made}</span>
+                                                            {t.tende}
+                                                        </div>
+                                                        <div className="text-muted small">
+                                                            {t.tenmonhoc} · {t.thoigianthi} phút
+                                                        </div>
+                                                        <div className="text-muted small">
+                                                            BĐ: {t.thoigianbatdau || '--'} · KT: {t.thoigianketthuc || '--'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-end">
+                                                        {t.diemthi !== null && t.diemthi !== undefined ? (
+                                                            <span className="badge bg-success">Điểm: {t.diemthi}</span>
+                                                        ) : (
+                                                            <a className="btn btn-sm btn-primary" href={`/tests/${t.made}/start`}>
+                                                                Vào thi
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
                             </div>
                         )}
                         {activeTab === 'friends' && (
