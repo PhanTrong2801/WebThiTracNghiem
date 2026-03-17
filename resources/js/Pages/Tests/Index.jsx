@@ -56,7 +56,7 @@ export default function TestsIndex() {
                                 <input
                                     type="text"
                                     className="form-control form-control-alt"
-                                    placeholder="Tìm theo tên đề..."
+                                    placeholder="Tìm theo tên đề hoặc môn học..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />

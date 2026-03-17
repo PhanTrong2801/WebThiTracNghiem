@@ -27,7 +27,15 @@ class TestController extends Controller
 
         $query = DeThiModel::query()
             ->with(['monhoc'])
-            ->when($search, fn ($q) => $q->where('tende', 'like', "%{$search}%"));
+            ->when($search, function($q) use ($search) {
+                $q->where(function($sq) use ($search) {
+                    $sq->where('tende', 'like', "%{$search}%")
+                       ->orWhere('monthi', 'like', "%{$search}%")
+                       ->orWhereHas('monhoc', function($mq) use ($search) {
+                           $mq->where('tenmonhoc', 'like', "%{$search}%");
+                       });
+                });
+            });
 
         // Nếu là giảng viên: 
         if ($user) {
@@ -235,24 +243,58 @@ class TestController extends Controller
     public function schedule(Request $request)
     {
         $user = $request->user();
+        $search = $request->query('search');
 
-        // Lấy danh sách nhóm user tham gia, rồi truy ra đề đã giao
+        // Lấy danh sách nhóm user tham gia
         $nhomIds = DB::table('chitietnhom')
             ->where('manguoidung', $user->id)
             ->pluck('manhom');
 
-        $dethi = DeThiModel::query()
+        // Lấy danh sách mã môn học từ các nhóm user tham gia
+        $mamonhocIds = DB::table('nhom')
+            ->whereIn('manhom', $nhomIds)
+            ->pluck('mamonhoc');
+
+        // Lấy IDs các đề đã làm (có điểm)
+        $completedIds = DB::table('ketqua')
+            ->where('manguoidung', $user->id)
+            ->whereNotNull('diemthi')
+            ->pluck('made');
+
+        // Logic tìm kiếm chung
+        $applySearch = function($q) use ($search) {
+            $q->where(function($sq) use ($search) {
+                $sq->where('tende', 'like', "%{$search}%")
+                   ->orWhere('monthi', 'like', "%{$search}%")
+                   ->orWhereHas('monhoc', function($mq) use ($search) {
+                       $mq->where('tenmonhoc', 'like', "%{$search}%");
+                   });
+            });
+        };
+
+        // 1. Phân trang Đề thi sắp tới
+        $assignedExams = DeThiModel::query()
             ->with('monhoc')
-            ->whereIn('made', function ($q) use ($nhomIds) {
-                $q->select('made')
-                    ->from('giaodethi')
-                    ->whereIn('manhom', $nhomIds);
-            })
-            ->orderByDesc('thoigianbatdau')
-            ->paginate(10);
+            ->whereIn('monthi', $mamonhocIds)
+            ->whereNotIn('made', $completedIds)
+            ->when($search, $applySearch)
+            ->orderByDesc('made')
+            ->paginate(7, ['*'], 'ap')
+            ->withQueryString();
+
+        // 2. Phân trang Đề thi đã hoàn thành
+        $completedExams = DeThiModel::query()
+            ->with('monhoc')
+            ->whereIn('made', $completedIds)
+            ->when($search, $applySearch)
+            ->orderByDesc('made')
+            ->paginate(7, ['*'], 'cp')
+            ->withQueryString();
 
         return Inertia::render('Tests/Schedule', [
-            'danhSachDeThi' => $dethi,
+            'assignedExams' => $assignedExams,
+            'completedExams' => $completedExams,
+            'filters' => ['search' => $search],
         ]);
     }
 
@@ -398,6 +440,205 @@ class TestController extends Controller
         return Inertia::render('Tests/Results', [
             'test' => $test,
             'danhSachKetQua' => $ketqua,
+        ]);
+    }
+
+    /**
+     * Trang chi tiết đề thi (GV): Danh sách + Thống kê + xem bài làm
+     */
+    public function detail(Request $request, int $made)
+    {
+        $test = DeThiModel::query()->with(['monhoc'])->findOrFail($made);
+        if ((string) $test->nguoitao !== (string) $request->user()->id) {
+            abort(403);
+        }
+
+        $groups = DB::table('giaodethi as gdt')
+            ->join('nhom as n', 'n.manhom', '=', 'gdt.manhom')
+            ->where('gdt.made', $made)
+            ->select(['n.manhom', 'n.tennhom', 'n.namhoc', 'n.hocky'])
+            ->orderByDesc('n.namhoc')
+            ->orderByDesc('n.hocky')
+            ->orderByDesc('n.manhom')
+            ->get();
+
+        $defaultGroup = (int) ($request->query('manhom') ?? ($groups[0]->manhom ?? 0));
+
+        return Inertia::render('Tests/Detail', [
+            'test' => $test,
+            'groups' => $groups,
+            'defaultGroup' => $defaultGroup,
+        ]);
+    }
+
+    /**
+     * API thống kê 
+     * Query param: manhom (0 = tất cả nhóm của đề)
+     */
+    public function getStatistical(Request $request, int $made)
+    {
+        $test = DeThiModel::findOrFail($made);
+        if ((string) $test->nguoitao !== (string) $request->user()->id) {
+            abort(403);
+        }
+
+        $manhom = (int) ($request->query('manhom') ?? 0);
+
+        $q = DB::table('chitietnhom as ctn')
+            ->join('giaodethi as gdt', 'ctn.manhom', '=', 'gdt.manhom')
+            ->leftJoin('ketqua as kq', function ($join) use ($made) {
+                $join->on('kq.manguoidung', '=', 'ctn.manguoidung')
+                    ->where('kq.made', '=', $made);
+            })
+            ->where('gdt.made', $made);
+
+        if ($manhom !== 0) {
+            $q->where('ctn.manhom', $manhom);
+        }
+
+        $rows = $q->select([
+            'ctn.manguoidung',
+            'kq.manguoidung as mandkq',
+            'kq.makq',
+            'kq.diemthi',
+        ])->get();
+
+        $bins = array_fill(0, 10, 0);
+        $tongdiem = 0;
+        $soluong = 0;
+        $max = 0;
+        $chuanop = 0;
+        $khongthi = 0;
+
+        foreach ($rows as $r) {
+            if ($r->diemthi !== null) {
+                $d = (float) $r->diemthi;
+                $tongdiem += $d;
+                $soluong++;
+                $index = (int) ceil($d) > 0 ? ((int) ceil($d) - 1) : 0;
+                if ($index < 0) $index = 0;
+                if ($index > 9) $index = 9;
+                $bins[$index]++;
+                if ($d > $max) $max = $d;
+            } else {
+                if ($r->mandkq !== null) $chuanop++;
+                else $khongthi++;
+            }
+        }
+
+        return response()->json([
+            'diem_trung_binh' => $soluong !== 0 ? round($tongdiem / $soluong, 2) : 0,
+            'da_nop_bai' => $soluong,
+            'chua_nop_bai' => $chuanop,
+            'khong_thi' => $khongthi,
+            'diem_cao_nhat' => $max,
+            'thong_ke_diem' => $bins,
+        ]);
+    }
+
+    /**
+     * API danh sách điểm theo nhóm 
+     * Query param: manhom (bắt buộc)
+     */
+    public function getScores(Request $request, int $made)
+    {
+        $test = DeThiModel::findOrFail($made);
+        if ((string) $test->nguoitao !== (string) $request->user()->id) {
+            abort(403);
+        }
+
+        $manhom = (int) ($request->query('manhom') ?? 0);
+        if ($manhom <= 0) {
+            return response()->json([]);
+        }
+
+        $rows = DB::table('giaodethi as gdt')
+            ->join('chitietnhom as ctn', 'gdt.manhom', '=', 'ctn.manhom')
+            ->join('users as u', 'u.id', '=', 'ctn.manguoidung')
+            ->leftJoin('ketqua as kq', function ($join) use ($made) {
+                $join->on('ctn.manguoidung', '=', 'kq.manguoidung')
+                    ->where('kq.made', '=', $made);
+            })
+            ->where('gdt.made', $made)
+            ->where('gdt.manhom', $manhom)
+            ->select([
+                'ctn.manguoidung',
+                'u.hoten',
+                'u.email',
+                'kq.makq',
+                'kq.diemthi',
+                'kq.thoigianvaothi',
+                'kq.thoigianlambai',
+                'kq.socaudung',
+                'kq.solanchuyentab',
+            ])
+            ->distinct()
+            ->orderBy('ctn.manguoidung')
+            ->get();
+
+        return response()->json($rows);
+    }
+
+    /**
+     * API chi tiết bài làm 
+     */
+    public function getResultDetail(Request $request, int $makq)
+    {
+        $kq = KetQuaModel::query()->with(['dethi'])->findOrFail($makq);
+        $test = $kq->dethi;
+        if (!$test) abort(404);
+
+        $userId = (string) $request->user()->id;
+        $isTeacher = (string) $test->nguoitao === $userId;
+        $isOwnerStudent = (string) $kq->manguoidung === $userId;
+
+        if (!$isTeacher) {
+            // SV: phải là chủ bài + đã có điểm + đề cho xem bài làm
+            if (!$isOwnerStudent || $kq->diemthi === null || (int) $test->hienthibailam !== 1) {
+                abort(403);
+            }
+        }
+
+        $detail = ChiTietKetQuaModel::query()
+            ->where('makq', $makq)
+            ->with(['cauhoi.cautraloi'])
+            ->get()
+            ->map(function ($row) use ($test, $isTeacher) {
+                $q = $row->cauhoi;
+                $answers = ($q?->cautraloi ?? collect())->map(function ($a) use ($test, $row, $isTeacher) {
+                    $isCorrect = (int) $a->ladapan === 1;
+                    $hideCorrect = (!$isTeacher && (int) $test->xemdapan !== 1);
+                    return [
+                        'macautl' => $a->macautl,
+                        'noidungtl' => $a->noidungtl,
+                        'ladapan' => $hideCorrect ? null : $isCorrect,
+                        'is_chosen' => ((int) $row->dapanchon === (int) $a->macautl),
+                    ];
+                });
+
+                // đáp án đúng (để hiện "Đáp án đúng: ..." khi SV chọn sai)
+                $correctIds = ($q?->cautraloi ?? collect())->filter(fn ($a) => (int) $a->ladapan === 1)->pluck('macautl')->values();
+                $hideCorrect = (!$isTeacher && (int) $test->xemdapan !== 1);
+
+                return [
+                    'macauhoi' => $q?->macauhoi,
+                    'noidung' => $q?->noidung,
+                    'dokho' => $q?->dokho,
+                    'dapanchon' => $row->dapanchon,
+                    'correct_ids' => $hideCorrect ? [] : $correctIds,
+                    'cautraloi' => $answers,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'makq' => $kq->makq,
+            'made' => $kq->made,
+            'manguoidung' => $kq->manguoidung,
+            'diemthi' => $kq->diemthi,
+            'xemdapan' => (int) $test->xemdapan,
+            'hienthibailam' => (int) $test->hienthibailam,
+            'questions' => $detail,
         ]);
     }
 

@@ -176,7 +176,7 @@ export default function Dashboard() {
                                 colorClass="primary" 
                             />
                             <StatCard 
-                                title="Ngân hàng câu hỏi" 
+                                title="Ngân hàng câu hỏi đã thêm" 
                                 value={stats.totalQuestionsCreated || 0} 
                                 icon="fa-list" 
                                 link="/questions" 
@@ -184,9 +184,9 @@ export default function Dashboard() {
                             />
                             <StatCard 
                                 title="Đề thi đã tạo" 
-                                value={0} // Tạm thời để 0
+                                value={stats.totalExamsCreated || 0} 
                                 icon="fa-file-lines" 
-                                link="#" 
+                                link="/tests" 
                                 colorClass="info" 
                             />
                         </>
@@ -206,14 +206,14 @@ export default function Dashboard() {
                                 title="Bài thi sắp tới" 
                                 value={stats.totalUpcomingTests || 0} 
                                 icon="fa-clock" 
-                                link="#" 
+                                link="/tests/schedule?type=assigned" 
                                 colorClass="warning" 
                             />
                             <StatCard 
                                 title="Kết quả bài thi" 
                                 value={stats.totalTestResults || 0} 
                                 icon="fa-check-circle" 
-                                link="#" 
+                                link="/tests/schedule?type=completed" 
                                 colorClass="success" 
                             />
                         </>

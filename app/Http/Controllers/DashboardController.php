@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UserModel;
 use App\Models\NhomQuyenModel;
+use App\Models\DeThiModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
@@ -63,15 +64,46 @@ class DashboardController extends Controller
             $stats['totalManagedGroups'] = DB::table('nhom')->where('giangvien', $user->id)->count();
             // Số lượng câu hỏi (Bảng cauhoi dùng cột nguoitao)
             $stats['totalQuestionsCreated'] = DB::table('cauhoi')->where('nguoitao', $user->id)->count();
+            // Số lượng đề thi đã tạo (Bảng dethi dùng cột nguoitao)
+            $stats['totalExamsCreated'] = DB::table('dethi')->where('nguoitao', $user->id)->count();
         }
 
         // Thống kê Sinh viên
         if (isset($permissions['tghocphan']) || isset($permissions['tgthi'])) {
             $stats['studentStats'] = true;
             $stats['totalJoinedGroups'] = DB::table('chitietnhom')->where('manguoidung', $user->id)->count();
-            // Bạn có thể thêm thống kê bài thi sắp tới nếu có bảng dethi/lichthi
-            $stats['totalUpcomingTests'] = 0; // Tạm thời để 0 nếu chưa có logic thi
-            $stats['totalTestResults'] = 0;   // Tạm thời để 0
+            
+            // IDs các nhóm sinh viên tham gia
+            $nhomIds = DB::table('chitietnhom')->where('manguoidung', $user->id)->pluck('manhom');
+
+            // IDs các môn học sinh viên tham gia (qua bất kỳ nhóm nào)
+            $mamonhocIds = DB::table('nhom')
+                ->whereIn('manhom', $nhomIds)
+                ->pluck('mamonhoc');
+
+            // 1. Bài thi sắp tới: Thuộc môn tham gia, chưa làm, (chưa hết hạn hoặc không hạn)
+            $stats['totalUpcomingTests'] = DeThiModel::query()
+                ->whereIn('monthi', $mamonhocIds)
+                ->where(function ($query) {
+                    $query->where('thoigianketthuc', '>', now())
+                        ->orWhereNull('thoigianketthuc');
+                })
+                ->whereNotExists(function ($query) use ($user) {
+                    $query->select(DB::raw(1))
+                        ->from('ketqua')
+                        ->whereRaw('ketqua.made = dethi.made')
+                        ->where('ketqua.manguoidung', $user->id);
+                })
+                ->count();
+
+            // 2. Kết quả bài thi: Đã làm (có điểm) và thuộc các môn tham gia
+            $stats['totalTestResults'] = DB::table('ketqua')
+                ->where('manguoidung', $user->id)
+                ->whereNotNull('diemthi')
+                ->whereIn('made', function($q) use ($mamonhocIds) {
+                    $q->select('made')->from('dethi')->whereIn('monthi', $mamonhocIds);
+                })
+                ->count();
         }
 
         return Inertia::render('Dashboard', [

@@ -38,6 +38,9 @@ export default function TestResults() {
                             <Link className="btn btn-sm btn-alt-secondary" href="/tests">
                                 <i className="fa fa-arrow-left me-1"></i> Danh sách đề
                             </Link>
+                            <Link className="btn btn-sm btn-alt-primary" href={`/tests/${test.made}/detail`}>
+                                <i className="fa fa-chart-simple me-1"></i> Chi tiết & Thống kê
+                            </Link>
                         </div>
                     </div>
 

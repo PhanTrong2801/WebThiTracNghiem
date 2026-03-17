@@ -105,6 +105,10 @@ Route::middleware('auth')->group(function () {
 
     // Thống kê / kết quả (giảng viên)
     Route::get('/tests/{made}/results', [TestController::class, 'results'])->name('tests.results');
+    Route::get('/tests/{made}/detail', [TestController::class, 'detail'])->name('tests.detail');
+    Route::get('/tests/{made}/statistical', [TestController::class, 'getStatistical'])->name('tests.statistical');
+    Route::get('/tests/{made}/scores', [TestController::class, 'getScores'])->name('tests.scores');
+    Route::get('/tests/result/{makq}/detail', [TestController::class, 'getResultDetail'])->name('tests.result.detail');
 
     // Alias routes để khớp menu/layout cũ (dùng trong `global_menu`)
     Route::get('/test', [TestController::class, 'index'])->name('test.index');

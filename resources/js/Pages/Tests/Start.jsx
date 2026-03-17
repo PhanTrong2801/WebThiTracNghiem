@@ -1,12 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MainLayout from '@/Components/MainLayouts';
 import { Head, usePage, Link } from '@inertiajs/react';
+import axios from 'axios';
 
 export default function TestStart() {
     const { auth, test, ketqua, flash, now } = usePage().props;
     const user = auth.user;
 
     const hasSubmitted = ketqua?.diemthi !== null && ketqua?.diemthi !== undefined;
+    const canViewDetail = hasSubmitted && Number(test?.hienthibailam) === 1 && ketqua?.makq;
+
+    const [showModal, setShowModal] = useState(false);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [detail, setDetail] = useState(null);
+
+    const openDetail = async () => {
+        if (!ketqua?.makq) return;
+        setShowModal(true);
+        setDetailLoading(true);
+        setDetail(null);
+        try {
+            const res = await axios.get(`/tests/result/${ketqua.makq}/detail`);
+            setDetail(res.data);
+        } finally {
+            setDetailLoading(false);
+        }
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setDetail(null);
+        setDetailLoading(false);
+    };
 
     return (
         <MainLayout user={user}>
@@ -69,12 +94,81 @@ export default function TestStart() {
                                 <div className="text-end">
                                     <div className="text-muted small">Điểm của bạn</div>
                                     <div className="fs-3 fw-bold text-success">{ketqua.diemthi}</div>
+                                    {canViewDetail && (
+                                        <button type="button" className="btn btn-sm btn-alt-primary mt-2" onClick={openDetail}>
+                                            <i className="fa fa-eye me-1"></i> Xem chi tiết bài thi
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {showModal && (
+                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
+                    <div className="modal-dialog modal-dialog-scrollable modal-xl">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Chi tiết bài làm</h5>
+                                <button type="button" className="btn-close" onClick={closeModal}></button>
+                            </div>
+                            <div className="modal-body">
+                                {detailLoading || !detail ? (
+                                    <div className="text-muted py-4 text-center">Đang tải...</div>
+                                ) : (
+                                    <div>
+                                        {detail.questions.map((q, idx) => {
+                                            const correctIds = new Set((q.correct_ids || []).map(String));
+                                            const chosen = q.dapanchon ? String(q.dapanchon) : '';
+                                            const isCorrect = chosen && correctIds.size > 0 ? correctIds.has(chosen) : null;
+                                            return (
+                                                <div key={q.macauhoi || idx} className="block block-rounded border mb-3">
+                                                    <div className="block-header block-header-default d-flex justify-content-between">
+                                                        <div className="fw-semibold">Câu {idx + 1}</div>
+                                                        {isCorrect === null ? null : (
+                                                            isCorrect ? <span className="badge bg-success">Đúng</span> : <span className="badge bg-danger">Sai</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="block-content">
+                                                        <div className="mb-3" dangerouslySetInnerHTML={{ __html: q.noidung }} />
+                                                        <div className="list-group">
+                                                            {(q.cautraloi || []).map((a, aidx) => {
+                                                                const isChosen = !!a.is_chosen;
+                                                                const isAnsCorrect = a.ladapan === true;
+                                                                const cls = isChosen
+                                                                    ? (isAnsCorrect ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-danger')
+                                                                    : 'list-group-item';
+                                                                return (
+                                                                    <div key={a.macautl || aidx} className={cls}>
+                                                                        <span className="badge bg-secondary me-2">{String.fromCharCode(65 + aidx)}</span>
+                                                                        <span>{a.noidungtl}</span>
+                                                                        {isChosen && <span className="ms-2 badge bg-primary">Bạn chọn</span>}
+                                                                        {isAnsCorrect && <span className="ms-2 badge bg-success">Đáp án đúng</span>}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        {detail.xemdapan === 1 && correctIds.size > 0 && isCorrect === false && (
+                                                            <div className="mt-2 text-muted small">
+                                                                Đáp án đúng: {Array.from(correctIds).join(', ')}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-alt-secondary" onClick={closeModal}>Đóng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MainLayout>
     );
 }
