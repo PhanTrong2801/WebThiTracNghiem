@@ -46,6 +46,7 @@ class DatabaseSeeder extends Seeder
             'hocky' => 1,
             'trangthai' => 1,
             'hienthi' => 1,
+            'duocday' => 1,
             'giangvien' => 'DH1111111',
             'mamonhoc' => 'CS03015',
         ]);

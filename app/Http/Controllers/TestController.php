@@ -27,6 +27,7 @@ class TestController extends Controller
 
         $query = DeThiModel::query()
             ->with(['monhoc'])
+            ->withCount('cauhoi')
             ->when($search, function($q) use ($search) {
                 $q->where(function($sq) use ($search) {
                     $sq->where('tende', 'like', "%{$search}%")
@@ -37,9 +38,11 @@ class TestController extends Controller
                 });
             });
 
-        // Nếu là giảng viên: 
+        // Nếu là giảng viên:
         if ($user) {
             $query->where('nguoitao', $user->id);
+            // Chỉ hiển thị đề thi khi giáo viên được phân công dạy môn đó
+            $query->where('duocday', 1);
         }
 
         $danhSachDeThi = $query->orderByDesc('made')->paginate(10)->withQueryString();
@@ -300,7 +303,7 @@ class TestController extends Controller
 
     public function start(Request $request, int $made)
     {
-        $test = DeThiModel::query()->with(['monhoc'])->findOrFail($made);
+        $test = DeThiModel::query()->with(['monhoc'])->withCount('cauhoi')->findOrFail($made);
 
         // Check được phép (đã giao cho nhóm)
         $allowed = $this->checkStudentAllowed($request->user()->id, $made);
@@ -322,7 +325,18 @@ class TestController extends Controller
     {
         $test = DeThiModel::query()
             ->with(['cauhoi.cautraloi'])
+            ->withCount('cauhoi')
             ->findOrFail($made);
+
+        // Kiểm tra đề có câu hỏi không
+        if ($test->cauhoi_count === 0) {
+            return Inertia::render('Tests/Start', [
+                'test' => $test,
+                'ketqua' => null,
+                'now' => now()->toDateTimeString(),
+                'error' => 'Đề thi chưa có câu hỏi. Vui lòng liên hệ giáo viên để được thêm câu hỏi vào đề thi.',
+            ]);
+        }
 
         $allowed = $this->checkStudentAllowed($request->user()->id, $made);
         if (!$allowed) abort(403);
@@ -448,7 +462,7 @@ class TestController extends Controller
      */
     public function detail(Request $request, int $made)
     {
-        $test = DeThiModel::query()->with(['monhoc'])->findOrFail($made);
+        $test = DeThiModel::query()->with(['monhoc'])->withCount('cauhoi')->findOrFail($made);
         if ((string) $test->nguoitao !== (string) $request->user()->id) {
             abort(403);
         }
@@ -584,62 +598,68 @@ class TestController extends Controller
      */
     public function getResultDetail(Request $request, int $makq)
     {
-        $kq = KetQuaModel::query()->with(['dethi'])->findOrFail($makq);
-        $test = $kq->dethi;
-        if (!$test) abort(404);
-
-        $userId = (string) $request->user()->id;
-        $isTeacher = (string) $test->nguoitao === $userId;
-        $isOwnerStudent = (string) $kq->manguoidung === $userId;
-
-        if (!$isTeacher) {
-            // SV: phải là chủ bài + đã có điểm + đề cho xem bài làm
-            if (!$isOwnerStudent || $kq->diemthi === null || (int) $test->hienthibailam !== 1) {
-                abort(403);
+        try {
+            $kq = KetQuaModel::query()->with(['dethi'])->findOrFail($makq);
+            $test = $kq->dethi;
+            if (!$test) {
+                return response()->json(['message' => 'Không tìm thấy đề thi'], 404);
             }
-        }
 
-        $detail = ChiTietKetQuaModel::query()
-            ->where('makq', $makq)
-            ->with(['cauhoi.cautraloi'])
-            ->get()
-            ->map(function ($row) use ($test, $isTeacher) {
-                $q = $row->cauhoi;
-                $answers = ($q?->cautraloi ?? collect())->map(function ($a) use ($test, $row, $isTeacher) {
-                    $isCorrect = (int) $a->ladapan === 1;
+            $userId = (string) $request->user()->id;
+            $isTeacher = (string) $test->nguoitao === $userId;
+            $isOwnerStudent = (string) $kq->manguoidung === $userId;
+
+            // GV: luôn được xem; SV: phải là chủ bài + đã có điểm + đề cho xem bài làm
+            if (!$isTeacher && (!$isOwnerStudent || $kq->diemthi === null || (int) $test->hienthibailam !== 1)) {
+                return response()->json(['message' => 'Bạn không có quyền xem chi tiết bài thi này'], 403);
+            }
+
+            $detail = ChiTietKetQuaModel::query()
+                ->where('makq', $makq)
+                ->with(['cauhoi.cautraloi'])
+                ->get()
+                ->map(function ($row) use ($test, $isTeacher) {
+                    $q = $row->cauhoi;
+                    $answers = ($q?->cautraloi ?? collect())->map(function ($a) use ($test, $row, $isTeacher) {
+                        $isCorrect = (int) $a->ladapan === 1;
+                        $hideCorrect = (!$isTeacher && (int) $test->xemdapan !== 1);
+                        return [
+                            'macautl' => $a->macautl,
+                            'noidungtl' => $a->noidungtl,
+                            'ladapan' => $hideCorrect ? null : $isCorrect,
+                            'is_chosen' => ((int) $row->dapanchon === (int) $a->macautl),
+                        ];
+                    });
+
+                    // đáp án đúng (để hiện "Đáp án đúng: ..." khi SV chọn sai)
+                    $correctIds = ($q?->cautraloi ?? collect())->filter(fn ($a) => (int) $a->ladapan === 1)->pluck('macautl')->values();
                     $hideCorrect = (!$isTeacher && (int) $test->xemdapan !== 1);
+
                     return [
-                        'macautl' => $a->macautl,
-                        'noidungtl' => $a->noidungtl,
-                        'ladapan' => $hideCorrect ? null : $isCorrect,
-                        'is_chosen' => ((int) $row->dapanchon === (int) $a->macautl),
+                        'macauhoi' => $q?->macauhoi,
+                        'noidung' => $q?->noidung,
+                        'dokho' => $q?->dokho,
+                        'dapanchon' => $row->dapanchon,
+                        'correct_ids' => $hideCorrect ? [] : $correctIds,
+                        'cautraloi' => $answers,
                     ];
-                });
+                })
+                ->values();
 
-                // đáp án đúng (để hiện "Đáp án đúng: ..." khi SV chọn sai)
-                $correctIds = ($q?->cautraloi ?? collect())->filter(fn ($a) => (int) $a->ladapan === 1)->pluck('macautl')->values();
-                $hideCorrect = (!$isTeacher && (int) $test->xemdapan !== 1);
-
-                return [
-                    'macauhoi' => $q?->macauhoi,
-                    'noidung' => $q?->noidung,
-                    'dokho' => $q?->dokho,
-                    'dapanchon' => $row->dapanchon,
-                    'correct_ids' => $hideCorrect ? [] : $correctIds,
-                    'cautraloi' => $answers,
-                ];
-            })
-            ->values();
-
-        return response()->json([
-            'makq' => $kq->makq,
-            'made' => $kq->made,
-            'manguoidung' => $kq->manguoidung,
-            'diemthi' => $kq->diemthi,
-            'xemdapan' => (int) $test->xemdapan,
-            'hienthibailam' => (int) $test->hienthibailam,
-            'questions' => $detail,
-        ]);
+            return response()->json([
+                'makq' => $kq->makq,
+                'made' => $kq->made,
+                'manguoidung' => $kq->manguoidung,
+                'diemthi' => $kq->diemthi,
+                'xemdapan' => (int) $test->xemdapan,
+                'hienthibailam' => (int) $test->hienthibailam,
+                'questions' => $detail,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Không tìm thấy kết quả'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
+        }
     }
 
     private function validateTest(Request $request): array

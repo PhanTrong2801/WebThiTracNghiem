@@ -12,11 +12,18 @@ use Inertia\Inertia;
 class AssignmentController extends Controller
 {
     /**
-     * Phân quyền cơ bản
+     * Phân quyền cơ bản - Inertia sẽ xử lý lỗi 403
      */
     private function checkPermission($action)
     {
-        $permissions = auth()->user()->getRolePermissions();
+        $user = auth()->user();
+        
+        if (!$user) {
+            abort(401, 'Chưa đăng nhập');
+        }
+        
+        $permissions = $user->getRolePermissions();
+        
         if (!isset($permissions['phancong']) || !in_array($action, $permissions['phancong'])) {
             abort(403, 'Bạn không có quyền: ' . $action);
         }
@@ -96,10 +103,28 @@ class AssignmentController extends Controller
                 return redirect()->back()->with('error', "Môn {$monHoc->tenmonhoc} không thuộc khoa của giảng viên này.");
             }
 
-            PhanCongModel::firstOrCreate([
-                'mamonhoc'    => $mamonhoc,
-                'manguoidung' => $request->manguoidung,
-            ]);
+            // Kiểm tra xem phân công đã tồn tại chưa
+            $existing = PhanCongModel::where('mamonhoc', $mamonhoc)
+                ->where('manguoidung', $request->manguoidung)
+                ->first();
+
+            if ($existing) {
+                // Nếu đã có phân công trước đó (đã bị xóa), thì tạo lại
+                PhanCongModel::firstOrCreate([
+                    'mamonhoc'    => $mamonhoc,
+                    'manguoidung' => $request->manguoidung,
+                ]);
+            } else {
+                // Tạo mới phân công
+                PhanCongModel::firstOrCreate([
+                    'mamonhoc'    => $mamonhoc,
+                    'manguoidung' => $request->manguoidung,
+                ]);
+            }
+
+            // Cập nhật duocday = 1 để giáo viên có thể quản lý hiển thị nhóm
+            DB::table('nhom')->where('mamonhoc', $mamonhoc)->update(['duocday' => 1]);
+            DB::table('dethi')->where('monthi', $mamonhoc)->update(['duocday' => 1]);
         }
 
         return redirect()->back()->with('success', 'Phân công thành công');
@@ -112,10 +137,19 @@ class AssignmentController extends Controller
     {
         $this->checkPermission('delete');
 
+        // Ẩn tất cả nhóm học phần và đề thi của môn này
+        DB::table('nhom')->where('mamonhoc', $mamonhoc)->update(['duocday' => 0]);
+        DB::table('dethi')->where('monthi', $mamonhoc)->update(['duocday' => 0]);
+
+        // Xóa phân công
         PhanCongModel::where('mamonhoc', $mamonhoc)
             ->where('manguoidung', $uid)->delete();
 
-        return redirect()->back()->with('success', 'Đã xóa phân công');
+        // Inertia cần redirect, không phải JSON
+        if (request()->header('X-Inertia')) {
+            return redirect()->back()->with('success', 'Đã xóa phân công.');
+        }
+        return response()->json(['message' => 'Đã xóa phân công']);
     }
 
     /**
@@ -124,8 +158,22 @@ class AssignmentController extends Controller
     public function destroyAll($uid)
     {
         $this->checkPermission('delete');
+
+        // Lấy danh sách môn của giảng viên này
+        $monHocs = PhanCongModel::where('manguoidung', $uid)->pluck('mamonhoc');
+
+        // Ẩn tất cả nhóm học phần và đề thi của các môn này
+        DB::table('nhom')->whereIn('mamonhoc', $monHocs)->update(['duocday' => 0]);
+        DB::table('dethi')->whereIn('monthi', $monHocs)->update(['duocday' => 0]);
+
+        // Xóa phân công
         PhanCongModel::where('manguoidung', $uid)->delete();
-        return redirect()->back()->with('success', 'Đã xóa tất cả phân công');
+
+        // Inertia cần redirect, không phải JSON
+        if (request()->header('X-Inertia')) {
+            return redirect()->back()->with('success', 'Đã xóa tất cả phân công.');
+        }
+        return response()->json(['message' => 'Đã xóa tất cả phân công']);
     }
 
     /**

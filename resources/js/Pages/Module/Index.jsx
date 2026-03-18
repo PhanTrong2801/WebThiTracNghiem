@@ -106,7 +106,11 @@ export default function ModuleIndex() {
 
     const toggleVisibility = (manhom, currentVal) => {
         axios.patch(`/modules/${manhom}/visibility`, { hienthi: currentVal === 1 ? 0 : 1 })
-            .then(() => router.reload());
+            .then(() => router.reload())
+            .catch(err => {
+                const msg = err.response?.data?.message || 'Không thể thay đổi trạng thái hiển thị';
+                alert(msg);
+            });
     };
 
     const refreshInviteCode = (manhom) => {
@@ -207,9 +211,14 @@ export default function ModuleIndex() {
                                             <div className="card-body">
                                                 <div className="d-flex justify-content-between align-items-start">
                                                     <h6 className="card-title mb-1 fw-bold">{nhom.tennhom}</h6>
-                                                    {nhom.hienthi === 0 && (
-                                                        <span className="badge bg-secondary">Đã ẩn</span>
-                                                    )}
+                                                    <div className="d-flex gap-1 flex-wrap">
+                                                        {nhom.duocday === 0 && (
+                                                            <span className="badge bg-danger" title="Bạn không còn được phân công dạy môn học này">Không được dạy</span>
+                                                        )}
+                                                        {nhom.hienthi === 0 && nhom.duocday === 1 && (
+                                                            <span className="badge bg-secondary">Đã ẩn</span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 {nhom.ghichu && <p className="text-muted small mb-2">{nhom.ghichu}</p>}
                                                 <div className="d-flex align-items-center gap-2 mt-2 mb-2">
@@ -241,7 +250,7 @@ export default function ModuleIndex() {
                                                             <i className="fa fa-pencil"></i>
                                                         </button>
                                                     )}
-                                                    {canCreate && (
+                                                    {canCreate && nhom.duocday === 1 && (
                                                         <button className="btn btn-sm btn-alt-secondary"
                                                             title={nhom.hienthi === 1 ? 'Ẩn nhóm' : 'Hiện nhóm'}
                                                             onClick={() => toggleVisibility(nhom.manhom, nhom.hienthi)}>

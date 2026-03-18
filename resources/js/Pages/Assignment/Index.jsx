@@ -86,7 +86,23 @@ export default function AssignmentIndex() {
 
     const handleDelete = (mamonhoc, uid) => {
         if (!confirm('Xóa phân công này?')) return;
-        router.delete(`/assignment/${mamonhoc}/${uid}`);
+        router.delete(`/assignment/${mamonhoc}/${uid}`, {
+            preserveScroll: true,
+            onError: (e) => alert(e?.message || 'Không thể xóa.'),
+        });
+    };
+
+    const handleDeleteAll = (gv) => {
+        if (!confirm(`Xóa toàn bộ phân công của ${gv.hoten}?`)) return;
+        const uid = String(gv.manguoidung ?? gv.id ?? '');
+        if (!uid) {
+            alert('Không xác định được giảng viên.');
+            return;
+        }
+        router.delete(`/assignment/user/${uid}`, {
+            preserveScroll: true,
+            onError: (e) => alert(e?.message || 'Không thể xóa.'),
+        });
     };
 
     // Group by giảng viên for display
@@ -173,10 +189,7 @@ export default function AssignmentIndex() {
                                                 <button
                                                     className="btn btn-sm btn-alt-danger"
                                                     title="Xóa tất cả phân công"
-                                                    onClick={() => {
-                                                        if (confirm(`Xóa toàn bộ phân công của ${gv.hoten}?`))
-                                                            router.delete(`/assignment/user/${gv.manguoidung}`);
-                                                    }}
+                                                    onClick={() => handleDeleteAll(gv)}
                                                 >
                                                     <i className="fa fa-trash"></i>
                                                 </button>

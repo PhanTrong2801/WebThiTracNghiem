@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->integer('hocky')->nullable();
             $table->tinyInteger('trangthai')->default(1);
             $table->tinyInteger('hienthi')->default(1);
+            $table->tinyInteger('duocday')->default(1);
             $table->string('giangvien', 50)->default('');
             $table->string('mamonhoc', 20);
 

@@ -27,7 +27,6 @@ class ChapterController extends Controller
         $this->checkPermission('view');
 
         $chapters = ChuongModel::where('mamonhoc', $mamonhoc)
-            ->active()
             ->orderBy('machuong')
             ->get();
 

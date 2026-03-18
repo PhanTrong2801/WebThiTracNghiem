@@ -32,6 +32,7 @@ class DeThiModel extends Model
         'socautb',
         'socaukho',
         'trangthai',
+        'duocday',
     ];
 
     protected $casts = [
