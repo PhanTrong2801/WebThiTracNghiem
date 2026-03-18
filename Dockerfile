@@ -16,11 +16,12 @@ RUN apk add --no-cache \
     libpng-dev \
     libxml2-dev \
     oniguruma-dev \
+    libzip-dev \
     zip \
     unzip
 
 # Cài đặt PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring gd bcmath
+RUN docker-php-ext-install pdo_mysql mbstring gd bcmath zip
 
 # Cài đặt Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
