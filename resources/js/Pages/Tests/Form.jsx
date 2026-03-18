@@ -51,8 +51,11 @@ export default function TestForm() {
 
     const filteredNhom = useMemo(() => {
         const all = danhSachNhom || [];
-        if (!form.monthi) return all;
-        return all.filter(n => String(n.mamonhoc) === String(form.monthi));
+        let result = all.filter(n => Number(n.hienthi) === 1); // chỉ hiện nhóm đang hoạt động
+        if (form.monthi) {
+            result = result.filter(n => String(n.mamonhoc) === String(form.monthi));
+        }
+        return result;
     }, [danhSachNhom, form.monthi]);
 
     const toggleId = (setter, list, id) => {
@@ -177,16 +180,25 @@ export default function TestForm() {
                                     <label className="form-label fw-semibold">Số câu (chỉ dùng cho đề tự động)</label>
                                     <div className="row g-2">
                                         <div className="col-md-4">
-                                            <input type="number" className="form-control" placeholder="Dễ" value={form.socaude}
-                                                onChange={(e) => setField('socaude', e.target.value)} min={0} />
+                                            <div className="input-group">
+                                                <span className="input-group-text bg-success text-white" title="Dễ">Cơ bản</span>
+                                                <input type="number" className="form-control" placeholder="0" value={form.socaude}
+                                                    onChange={(e) => setField('socaude', e.target.value)} min={0} />
+                                            </div>
                                         </div>
                                         <div className="col-md-4">
-                                            <input type="number" className="form-control" placeholder="Trung bình" value={form.socautb}
-                                                onChange={(e) => setField('socautb', e.target.value)} min={0} />
+                                            <div className="input-group">
+                                                <span className="input-group-text bg-warning text-dark" title="Trung bình">Trung bình</span>
+                                                <input type="number" className="form-control" placeholder="0" value={form.socautb}
+                                                    onChange={(e) => setField('socautb', e.target.value)} min={0} />
+                                            </div>
                                         </div>
                                         <div className="col-md-4">
-                                            <input type="number" className="form-control" placeholder="Khó" value={form.socaukho}
-                                                onChange={(e) => setField('socaukho', e.target.value)} min={0} />
+                                            <div className="input-group">
+                                                <span className="input-group-text bg-danger text-white" title="Khó">Khó</span>
+                                                <input type="number" className="form-control" placeholder="0" value={form.socaukho}
+                                                    onChange={(e) => setField('socaukho', e.target.value)} min={0} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

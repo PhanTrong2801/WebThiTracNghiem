@@ -12,11 +12,18 @@ use Inertia\Inertia;
 class AssignmentController extends Controller
 {
     /**
-     * Phân quyền cơ bản
+     * Phân quyền cơ bản - Inertia sẽ xử lý lỗi 403
      */
     private function checkPermission($action)
     {
-        $permissions = auth()->user()->getRolePermissions();
+        $user = auth()->user();
+        
+        if (!$user) {
+            abort(401, 'Chưa đăng nhập');
+        }
+        
+        $permissions = $user->getRolePermissions();
+        
         if (!isset($permissions['phancong']) || !in_array($action, $permissions['phancong'])) {
             abort(403, 'Bạn không có quyền: ' . $action);
         }
@@ -96,36 +103,87 @@ class AssignmentController extends Controller
                 return redirect()->back()->with('error', "Môn {$monHoc->tenmonhoc} không thuộc khoa của giảng viên này.");
             }
 
-            PhanCongModel::firstOrCreate([
-                'mamonhoc'    => $mamonhoc,
-                'manguoidung' => $request->manguoidung,
-            ]);
+            // Kiểm tra xem phân công đã tồn tại chưa
+            $existing = PhanCongModel::where('mamonhoc', $mamonhoc)
+                ->where('manguoidung', $request->manguoidung)
+                ->first();
+
+            if ($existing) {
+                // Nếu đã có phân công trước đó (đã bị xóa), thì tạo lại
+                PhanCongModel::firstOrCreate([
+                    'mamonhoc'    => $mamonhoc,
+                    'manguoidung' => $request->manguoidung,
+                ]);
+            } else {
+                // Tạo mới phân công
+                PhanCongModel::firstOrCreate([
+                    'mamonhoc'    => $mamonhoc,
+                    'manguoidung' => $request->manguoidung,
+                ]);
+            }
+
+            // Cập nhật duocday = 1 để giáo viên có thể quản lý hiển thị nhóm
+            DB::table('nhom')->where('mamonhoc', $mamonhoc)->update(['duocday' => 1]);
+            DB::table('dethi')->where('monthi', $mamonhoc)->update(['duocday' => 1]);
         }
 
         return redirect()->back()->with('success', 'Phân công thành công');
     }
 
-    /**
-     * Xóa một phân công (môn cụ thể)
-     */
+    // Xóa một phân công (môn cụ thể)
     public function destroy($mamonhoc, $uid)
+    {
+        \Log::info("DESTROY: mamonhoc=$mamonhoc uid=$uid");
+        $this->checkPermission('delete');
+
+        DB::table('nhom')->where('mamonhoc', $mamonhoc)->update(['duocday' => 0]);
+        DB::table('dethi')->where('monthi', $mamonhoc)->update(['duocday' => 0]);
+
+        $deleted = PhanCongModel::where('mamonhoc', $mamonhoc)
+            ->where('manguoidung', $uid)->delete();
+
+        \Log::info("DESTROY done: deleted=$deleted");
+
+        return redirect()->route('assignment.index')->with('success', "Đã xóa $deleted phân công.");
+    }
+
+    /**
+     * Xóa tất cả phân công trong hệ thống
+     */
+    public function destroyAll(Request $request)
     {
         $this->checkPermission('delete');
 
-        PhanCongModel::where('mamonhoc', $mamonhoc)
-            ->where('manguoidung', $uid)->delete();
+        // Xóa tất cả phân công
+        $deleted = PhanCongModel::truncate();
 
-        return redirect()->back()->with('success', 'Đã xóa phân công');
+        // Reset duocday = 0 cho tất cả nhóm và đề thi
+        DB::table('nhom')->update(['duocday' => 0]);
+        DB::table('dethi')->update(['duocday' => 0]);
+
+        \Log::info("DESTROY ALL PHAN CONG: deleted=$deleted");
+
+        return redirect()->route('assignment.index')->with('success', 'Đã xóa tất cả phân công.');
     }
 
     /**
      * Xoá toàn bộ phân công của một giảng viên
      */
-    public function destroyAll($uid)
+    public function destroyByUser($uid)
     {
+        \Log::info("DESTROYALL: uid=$uid");
         $this->checkPermission('delete');
-        PhanCongModel::where('manguoidung', $uid)->delete();
-        return redirect()->back()->with('success', 'Đã xóa tất cả phân công');
+
+        $monHocs = PhanCongModel::where('manguoidung', $uid)->pluck('mamonhoc');
+
+        DB::table('nhom')->whereIn('mamonhoc', $monHocs)->update(['duocday' => 0]);
+        DB::table('dethi')->whereIn('monthi', $monHocs)->update(['duocday' => 0]);
+
+        $deleted = PhanCongModel::where('manguoidung', $uid)->delete();
+
+        \Log::info("DESTROYALL done: deleted=$deleted");
+
+        return redirect()->route('assignment.index')->with('success', "Đã xóa $deleted phân công của giảng viên.");
     }
 
     /**

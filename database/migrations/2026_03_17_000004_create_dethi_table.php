@@ -30,6 +30,7 @@ return new class extends Migration {
             $table->integer('socautb')->nullable();
             $table->integer('socaukho')->nullable();
             $table->boolean('trangthai')->default(1);
+            $table->tinyInteger('duocday')->default(1);
 
             $table->foreign('monthi')->references('mamonhoc')->on('monhoc')->onDelete('cascade');
             $table->foreign('nguoitao')->references('id')->on('users')->onDelete('cascade');

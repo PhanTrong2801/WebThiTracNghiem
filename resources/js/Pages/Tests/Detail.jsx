@@ -29,7 +29,6 @@ export default function TestDetail() {
     const [scores, setScores] = useState([]);
     const [loadingStats, setLoadingStats] = useState(false);
     const [loadingScores, setLoadingScores] = useState(false);
-
     const [activeTab, setActiveTab] = useState('list'); // list | stats
 
     // View result detail modal
@@ -63,7 +62,8 @@ export default function TestDetail() {
     };
 
     useEffect(() => {
-        if (!manhom) {
+        // manhom = 0 có nghĩa là tất cả nhóm (theo logic backend)
+        if (manhom === null) {
             setStats(null);
             setScores([]);
             return;
@@ -126,6 +126,9 @@ export default function TestDetail() {
         try {
             const res = await axios.get(`/tests/result/${makq}/detail`);
             setDetail(res.data);
+        } catch (err) {
+            const msg = err.response?.data?.message || err.response?.data?.error || 'Không thể xem chi tiết bài thi';
+            setDetail({ error: msg });
         } finally {
             setDetailLoading(false);
         }
@@ -152,9 +155,8 @@ export default function TestDetail() {
                         </div>
                         <div className="d-flex gap-2 align-items-center">
                             <select className="form-select form-select-alt" value={manhom} onChange={(e) => setManhom(Number(e.target.value))} style={{ minWidth: 260 }}>
-                                {groupOptions.length === 0 ? (
-                                    <option value={0}>Chưa giao nhóm</option>
-                                ) : groupOptions.map(g => (
+                                <option value={0}>Tất cả nhóm</option>
+                                {groupOptions.map(g => (
                                     <option key={g.manhom} value={g.manhom}>
                                         #{g.manhom} - {g.tennhom} ({g.namhoc}-{Number(g.namhoc) + 1} HK{g.hocky})
                                     </option>
@@ -162,6 +164,20 @@ export default function TestDetail() {
                             </select>
                         </div>
                     </div>
+
+                    {test.cauhoi_count === 0 && (
+                        <div className="block-header block-header-default bg-warning-light">
+                            <div className="d-flex align-items-center gap-2">
+                                <i className="fa fa-exclamation-triangle text-warning"></i>
+                                <span className="text-warning-dark fw-semibold">
+                                    Đề thi chưa có câu hỏi! Vui lòng thêm câu hỏi trước khi cho sinh viên thi.
+                                </span>
+                                <a href={`/tests/${test.made}/select`} className="btn btn-sm btn-warning ms-auto">
+                                    <i className="fa fa-plus me-1"></i> Thêm câu hỏi
+                                </a>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="block-content">
                         <ul className="nav nav-tabs nav-tabs-alt">
@@ -294,18 +310,36 @@ export default function TestDetail() {
                             <div className="modal-body">
                                 {detailLoading || !detail ? (
                                     <div className="text-muted py-4 text-center">Đang tải...</div>
+                                ) : detail.error ? (
+                                    <div className="alert alert-danger">{detail.error}</div>
                                 ) : (
                                     <div>
-                                        {detail.questions.map((q, idx) => {
+                                        <div className="mb-3 d-flex gap-3">
+                                            {detail.xemdapan === 1 && (
+                                                <span className="badge bg-success"><i className="fa fa-check me-1"></i> Được xem đáp án</span>
+                                            )}
+                                            {detail.hienthibailam === 1 && (
+                                                <span className="badge bg-primary"><i className="fa fa-eye me-1"></i> Được xem bài làm</span>
+                                            )}
+                                        </div>
+                                        {detail.questions.length === 0 ? (
+                                            <div className="text-muted text-center py-4">Chưa có câu hỏi nào</div>
+                                        ) : detail.questions.map((q, idx) => {
                                             const correctIds = new Set((q.correct_ids || []).map(String));
                                             const chosen = q.dapanchon ? String(q.dapanchon) : '';
                                             const isCorrect = chosen && correctIds.size > 0 ? correctIds.has(chosen) : null;
+
+                                            // Hiển thị badge Đúng/Sai khi được xem đáp án
+                                            const showResult = detail.xemdapan === 1 && isCorrect !== null;
+
                                             return (
                                                 <div key={q.macauhoi || idx} className="block block-rounded border mb-3">
                                                     <div className="block-header block-header-default d-flex justify-content-between">
                                                         <div className="fw-semibold">Câu {idx + 1}</div>
-                                                        {isCorrect === null ? null : (
+                                                        {showResult ? (
                                                             isCorrect ? <span className="badge bg-success">Đúng</span> : <span className="badge bg-danger">Sai</span>
+                                                        ) : (
+                                                            <span className="badge bg-secondary">{q.dokho || '?'}</span>
                                                         )}
                                                     </div>
                                                     <div className="block-content">
@@ -314,15 +348,21 @@ export default function TestDetail() {
                                                             {(q.cautraloi || []).map((a, aidx) => {
                                                                 const isChosen = !!a.is_chosen;
                                                                 const isAnsCorrect = a.ladapan === true;
-                                                                const cls = isChosen
-                                                                    ? (isAnsCorrect ? 'list-group-item list-group-item-success' : 'list-group-item list-group-item-danger')
-                                                                    : 'list-group-item';
+
+                                                                // Chỉ hiển thị màu khi được xem bài làm
+                                                                let cls = 'list-group-item';
+                                                                if (detail.hienthibailam === 1) {
+                                                                    if (isChosen && isAnsCorrect) cls = 'list-group-item list-group-item-success';
+                                                                    else if (isChosen && !isAnsCorrect) cls = 'list-group-item list-group-item-danger';
+                                                                    else if (isAnsCorrect && detail.xemdapan === 1) cls = 'list-group-item list-group-item-success';
+                                                                }
+
                                                                 return (
                                                                     <div key={a.macautl || aidx} className={cls}>
                                                                         <span className="badge bg-secondary me-2">{String.fromCharCode(65 + aidx)}</span>
                                                                         <span>{a.noidungtl}</span>
-                                                                        {isChosen && <span className="ms-2 badge bg-primary">Bạn chọn</span>}
-                                                                        {isAnsCorrect && <span className="ms-2 badge bg-success">Đáp án đúng</span>}
+                                                                        {isChosen && detail.hienthibailam === 1 && <span className="ms-2 badge bg-primary">SV chọn</span>}
+                                                                        {isAnsCorrect && detail.xemdapan === 1 && <span className="ms-2 badge bg-success">Đáp án đúng</span>}
                                                                     </div>
                                                                 );
                                                             })}

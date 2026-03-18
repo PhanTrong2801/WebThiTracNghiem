@@ -43,17 +43,14 @@ export default function AssignmentIndex() {
     });
 
     const filteredMons = danhSachMonHoc.filter(mh => {
-        // Lọc theo search keyword
         const matchesSearch = !monSearch || 
             mh.tenmonhoc.toLowerCase().includes(monSearch.toLowerCase()) || 
             mh.mamonhoc.toLowerCase().includes(monSearch.toLowerCase());
         
         if (!matchesSearch) return false;
 
-        // Nếu chưa chọn GV, hiện tất cả (hoặc ẩn tuỳ ý, ở đây hiện tất cả cho search)
         if (!selectedGV) return true;
 
-        // Lọc theo khoa: Cùng khoa hoặc môn chung (makhoa null)
         const gv = danhSachGiangVien.find(g => g.id === selectedGV);
         const userKhoa = gv?.makhoa;
         
@@ -86,10 +83,43 @@ export default function AssignmentIndex() {
 
     const handleDelete = (mamonhoc, uid) => {
         if (!confirm('Xóa phân công này?')) return;
-        router.delete(`/assignment/${mamonhoc}/${uid}`);
+        router.delete(`/assignment/${mamonhoc}/${uid}`, {
+            preserveScroll: true,
+            onSuccess: () => {}, // có onSuccess để trigger reload nếu cần
+            onError: (e) => alert(e?.message || 'Không thể xóa.'),
+        });
     };
 
-    // Group by giảng viên for display
+    const handleDeleteAll = (gv) => {
+        if (!confirm(`Xóa toàn bộ phân công của ${gv.hoten}?`)) return;
+        const uid = String(gv.manguoidung ?? gv.id ?? '');
+        if (!uid) {
+            alert('Không xác định được giảng viên.');
+            return;
+        }
+        router.post(`/assignment/delete-user/${uid}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Reload toàn bộ trang để lấy dữ liệu mới
+                router.visit('/assignment', { preserveScroll: false });
+            },
+            onError: (e) => alert(e?.message || 'Không thể xóa.'),
+        });
+    };
+
+    const handleDeleteAllSystem = () => {
+        if (!confirm('BẠN CÓ CHẮC MUỐN XÓA TẤT CẢ PHÂN CÔNG? Hành động này không thể hoàn tác!')) return;
+        if (!confirm('Xác nhận lần 2: Xóa tất cả phân công trong hệ thống?')) return;
+        
+        router.post('/assignment/delete-all', {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.visit('/assignment', { preserveScroll: false });
+            },
+            onError: (e) => alert(e?.message || 'Không thể xóa.'),
+        });
+    };
+
     const grouped = (danhSachPhanCong || []).reduce((acc, pc) => {
         if (!acc[pc.manguoidung]) {
             acc[pc.manguoidung] = { hoten: pc.hoten, manguoidung: pc.manguoidung, monhocs: [] };
@@ -117,9 +147,14 @@ export default function AssignmentIndex() {
                 <div className="block block-rounded">
                     <div className="block-header block-header-default d-flex justify-content-between">
                         <h3 className="block-title">Phân công giảng dạy</h3>
-                        <button className="btn btn-hero btn-primary" onClick={openModal}>
-                            <i className="fa fa-plus me-1"></i> Thêm phân công
-                        </button>
+                        <div className="d-flex gap-2">
+                            <button className="btn btn-hero btn-danger" onClick={handleDeleteAllSystem}>
+                                <i className="fa fa-trash me-1"></i> Xóa tất cả phân công
+                            </button>
+                            <button className="btn btn-hero btn-primary" onClick={openModal}>
+                                <i className="fa fa-plus me-1"></i> Thêm phân công
+                            </button>
+                        </div>
                     </div>
                     <div className="block-content">
                         <div className="mb-4">
@@ -173,10 +208,7 @@ export default function AssignmentIndex() {
                                                 <button
                                                     className="btn btn-sm btn-alt-danger"
                                                     title="Xóa tất cả phân công"
-                                                    onClick={() => {
-                                                        if (confirm(`Xóa toàn bộ phân công của ${gv.hoten}?`))
-                                                            router.delete(`/assignment/user/${gv.manguoidung}`);
-                                                    }}
+                                                    onClick={() => handleDeleteAll(gv)}
                                                 >
                                                     <i className="fa fa-trash"></i>
                                                 </button>
@@ -190,7 +222,6 @@ export default function AssignmentIndex() {
                 </div>
             </div>
 
-            {/* Modal thêm phân công */}
             {showModal && (
                 <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
                     <div className="modal-dialog modal-dialog-scrollable modal-xl">
@@ -200,7 +231,6 @@ export default function AssignmentIndex() {
                                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
                             </div>
                             <div className="modal-body">
-                                {/* Chọn giảng viên */}
                                 <div className="row mb-4">
                                     <div className="col-md-4">
                                         <label className="form-label fw-semibold">Lọc theo khoa</label>
@@ -229,7 +259,6 @@ export default function AssignmentIndex() {
                                     </div>
                                 </div>
 
-                                {/* Tìm kiếm môn */}
                                 <div className="mb-3">
                                     <div className="input-group">
                                         <input type="text" className="form-control" placeholder="Tìm môn học..."
@@ -242,7 +271,6 @@ export default function AssignmentIndex() {
                                     </div>
                                 </div>
 
-                                {/* Bảng môn học */}
                                 <div className="table-responsive" style={{ maxHeight: '350px', overflowY: 'auto' }}>
                                     <table className="table table-vcenter table-bordered table-sm">
                                         <thead className="bg-body-light sticky-top">

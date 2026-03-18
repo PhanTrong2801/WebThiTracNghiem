@@ -23,6 +23,7 @@ class NhomModel extends Model
         'hienthi',
         'giangvien',
         'mamonhoc',
+        'duocday',
     ];
 
     public $timestamps = false;

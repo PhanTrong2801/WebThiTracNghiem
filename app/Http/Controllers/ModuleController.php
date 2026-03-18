@@ -21,10 +21,19 @@ class ModuleController extends Controller
         $userId = Auth::id();
         $hienthi = $request->query('hienthi', 1); // 1=đang giảng, 0=đã ẩn, all=tất cả
 
+        // Lấy tất cả nhóm của giáo viên (kể cả không được phân công)
+        // để hiển thị trạng thái "Không được dạy" khi cần
         $query = NhomModel::with(['monhoc'])->active()->where('giangvien', $userId);
 
-        if ($hienthi !== 'all') {
-            $query->where('hienthi', (int) $hienthi);
+        // Lọc theo hienthi và duocday
+        if ($hienthi === 'all') {
+            // Tất cả: hiển thị cả nhóm được dạy và không được dạy
+        } elseif ($hienthi == 1) {
+            // Đang giảng dạy: chỉ hiển thị nhóm được phép dạy (duocday=1) và đang hiển thị
+            $query->where('duocday', 1)->where('hienthi', 1);
+        } else {
+            // Đã ẩn: chỉ hiển thị nhóm được phép dạy (duocday=1) và đang ẩn
+            $query->where('duocday', 1)->where('hienthi', 0);
         }
 
         if ($request->filled('search')) {
@@ -59,6 +68,7 @@ class ModuleController extends Controller
                 'siso'     => $nhom->siso,
                 'hienthi'  => $nhom->hienthi,
                 'mamoi'    => $nhom->mamoi,
+                'duocday' => $nhom->duocday,
             ];
         }
 
@@ -181,6 +191,12 @@ class ModuleController extends Controller
     {
         $nhom = NhomModel::findOrFail($id);
         $this->authorize_owner($nhom);
+
+        // Nếu nhóm không được phép dạy (bị xóa phân công) thì không cho phép bật hiển thị
+        if ((int) $nhom->duocday !== 1) {
+            return response()->json(['ok' => false, 'message' => 'Bạn không được phép hiển thị nhóm này vì không còn phân công dạy môn học.']);
+        }
+
         $nhom->update(['hienthi' => $request->hienthi]);
         return response()->json(['ok' => true]);
     }

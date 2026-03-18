@@ -90,6 +90,12 @@ export default function TestsIndex() {
                                                 <div className="text-muted small">
                                                     {t.thoigianbatdau ? `BĐ: ${t.thoigianbatdau}` : 'Chưa đặt thời gian'}{t.thoigianketthuc ? ` · KT: ${t.thoigianketthuc}` : ''}
                                                 </div>
+                                                {t.cauhoi_count === 0 && (
+                                                    <div className="text-danger small mt-1">
+                                                        <i className="fa fa-exclamation-triangle me-1"></i>
+                                                        Chưa có câu hỏi
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="d-none d-md-table-cell">
                                                 <span className="fw-semibold">{t.monhoc?.tenmonhoc || t.monthi}</span>
@@ -97,6 +103,9 @@ export default function TestsIndex() {
                                             </td>
                                             <td className="text-center d-none d-xl-table-cell">
                                                 <span className="badge bg-info">{t.thoigianthi} phút</span>
+                                                {t.cauhoi_count > 0 && (
+                                                    <div className="text-muted small mt-1">{t.cauhoi_count} câu</div>
+                                                )}
                                             </td>
                                             <td className="text-center">
                                                 <div className="btn-group">

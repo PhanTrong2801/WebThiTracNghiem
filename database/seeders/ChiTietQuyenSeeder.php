@@ -73,6 +73,7 @@ class ChiTietQuyenSeeder extends Seeder
             ['manhomquyen' => 2, 'chucnang' => 'thongbao', 'hanhdong' => 'delete'],
             ['manhomquyen' => 2, 'chucnang' => 'thongbao', 'hanhdong' => 'update'],
             ['manhomquyen' => 2, 'chucnang' => 'thongbao', 'hanhdong' => 'view'],
+            ['manhomquyen' => 2, 'chucnang' => 'chuong', 'hanhdong' => 'view'],
 
             // Nhóm quyền 3
             ['manhomquyen' => 3, 'chucnang' => 'tghocphan', 'hanhdong' => 'join'],
