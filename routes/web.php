@@ -70,9 +70,16 @@ Route::middleware('auth')->group(function () {
     // Phân công (Assignment) - Cho admin
     Route::get('/assignment', [\App\Http\Controllers\AssignmentController::class, 'index'])->name('assignment.index');
     Route::post('/assignment', [\App\Http\Controllers\AssignmentController::class, 'store'])->name('assignment.store');
+
+    // Xóa tất cả phân công trong hệ thống
+    Route::post('/assignment/delete-all', [\App\Http\Controllers\AssignmentController::class, 'destroyAll'])->name('assignment.destroyAll');
+
+    // Route cố định đặt TRƯỚC route có parameter để tránh conflict
+    Route::post('/assignment/delete-user/{uid}', [\App\Http\Controllers\AssignmentController::class, 'destroyByUser'])->name('assignment.destroyByUser');
     Route::get('/assignment/user/{uid}', [\App\Http\Controllers\AssignmentController::class, 'getByUser']);
+
+    // Route có 2 params đặt SAU
     Route::delete('/assignment/{mamonhoc}/{uid}', [\App\Http\Controllers\AssignmentController::class, 'destroy'])->name('assignment.destroy');
-    Route::delete('/assignment/user/{uid}', [\App\Http\Controllers\AssignmentController::class, 'destroyAll'])->name('assignment.destroyAll');
 
     // Học phần của sinh viên (Student Modules)
     Route::group(['prefix' => 'student'], function () {
