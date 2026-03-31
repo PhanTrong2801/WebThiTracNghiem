@@ -21,6 +21,7 @@
         <!-- END Icons -->
 
         <title inertia>{{ config('app.name', 'STU Test') }}</title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

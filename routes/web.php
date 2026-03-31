@@ -14,8 +14,15 @@ use Inertia\Inertia;
 // Trang danh sách users (Frontend Inertia)
 Route::get('/users', [UserController::class, 'index'])->name('users.index');
 
-// API: Trả JSON - BASE_API/users/{id}
-Route::get('/users/{id}', [UserController::class, 'apiShow']);
+// API: CRUD Users
+Route::get('/users/api/all', [UserController::class, 'apiIndex']);
+Route::post('/users/api/create', [UserController::class, 'store'])->name('users.store');
+Route::get('/users/api/detail/{id}', [UserController::class, 'apiShow']);
+Route::put('/users/api/update/{id}', [UserController::class, 'update'])->name('users.update');
+Route::delete('/users/api/delete/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+Route::post('/users/api/check', [UserController::class, 'checkUser']);
+Route::post('/users/api/import', [UserController::class, 'importExcel'])->name('users.import');
+Route::get('/users/api/roles', [UserController::class, 'getRoles']);
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -32,7 +39,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
+    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile/role', [ProfileController::class, 'getRole']);
 
     // Nhóm quyền (Roles)
     Route::resource('roles', RoleController::class)->except(['create', 'edit']);
